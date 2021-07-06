@@ -240,11 +240,15 @@ Equivalent to calling `step_ball()` 720 times (6 seconds).
 
 Returns a normal-type ball prediction struct.
 
+![get_ball_prediction_struct takes 0.3ms to execute](https://raw.githubusercontent.com/VirxEC/rl_ball_sym_pybinds/master/gbps_bench.png)
+
 ## get_ball_prediction_struct_full
 
 Equivalent to calling `step_ball()` 720 times (6 seconds).
 
 Returns a full-type ball prediction struct.
+
+![get_ball_prediction_struct_full takes 0.54ms to execute](https://raw.githubusercontent.com/VirxEC/rl_ball_sym_pybinds/master/gbpsft_bench.png)
 
 ## get_ball_prediction_struct_for_time
 
