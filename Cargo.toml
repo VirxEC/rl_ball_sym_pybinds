@@ -1,0 +1,22 @@
+[package]
+name = "rl_ball_sym_pybinds"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/rlbs_pybinds.rs"
+
+[dependencies]
+rl_ball_sym = "0.2"
+
+[dependencies.cpython]
+version = "0.6"
+features = ["extension-module"]
+
+[profile.release]
+codegen-units=1
+lto = "fat"
+panic = "abort"
