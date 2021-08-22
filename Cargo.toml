@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 path = "src/rlbs_pybinds.rs"
 
 [dependencies]
-rl_ball_sym = "0.2"
+rl_ball_sym = "0.4"
 
 [dependencies.cpython]
 version = "0.6"

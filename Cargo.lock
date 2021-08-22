@@ -91,9 +91,9 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "rl_ball_sym"
-version = "0.2.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a66cab9fa808a588bbb83d45b8861041a3c66684bf1ff0b5c1836b50c374e0a1"
+checksum = "e853df5007863c26be39af538e0cecb90494ce93e3b797119d3380e32ec8330f"
 dependencies = [
  "byteorder",
 ]
