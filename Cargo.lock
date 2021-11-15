@@ -91,17 +91,25 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "rl_ball_sym"
-version = "0.4.1"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9778be3dacf1d559fa3a1bb526a68b24284e347b05e323abcd6b047cafc0f0cb"
+checksum = "c2f32200ab3cb7c04240b0da66bed0b97a1bfdde3db2333d8f72ff786f06a6bb"
 dependencies = [
  "byteorder",
+ "vvec3",
 ]
 
 [[package]]
 name = "rl_ball_sym_pybinds"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cpython",
  "rl_ball_sym",
+ "vvec3",
 ]
+
+[[package]]
+name = "vvec3"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2df50ff45a76b0a8099d7ae39200ad0c4f92801feca89b14e332f9198a50c01a"

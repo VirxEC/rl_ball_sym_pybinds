@@ -2,12 +2,12 @@ extern crate cpython;
 extern crate rl_ball_sym;
 
 use cpython::{exc, py_fn, py_module_initializer, ObjectProtocol, PyDict, PyErr, PyObject, PyResult, Python, PythonObject};
-use rl_ball_sym::linear_algebra::vector::Vec3;
-use rl_ball_sym::simulation::game::Game;
 use rl_ball_sym::simulation::ball::Ball;
+use rl_ball_sym::simulation::game::Game;
+use vvec3::Vec3;
 
 static mut GAME: Option<Game> = None;
-static NO_GAME_ERR: &str = "GAME is unset. Call a function like load_soccar first.";
+const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_soccar first.";
 
 py_module_initializer!(rl_ball_sym, |py, m| {
     m.add(py, "__doc__", "rl_ball_sym is a Rust implementation of ball path prediction for Rocket League; Inspired by Samuel (Chip) P. Mish's C++ utils called RLUtilities")?;
@@ -131,7 +131,7 @@ fn step_ball(py: Python, dt: f32) -> PyResult<PyObject> {
     }
 
     Ball::step(game, dt);
-    
+
     let slice = PyDict::new(py);
     slice.set_item(py, "time", game.ball.time).unwrap();
 

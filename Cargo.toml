@@ -1,6 +1,6 @@
 [package]
 name = "rl_ball_sym_pybinds"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,10 +10,11 @@ crate-type = ["cdylib"]
 path = "src/rlbs_pybinds.rs"
 
 [dependencies]
-rl_ball_sym = "0.4"
+vvec3 = "0.1.*"
+rl_ball_sym = "0.6.*"
 
 [dependencies.cpython]
-version = "0.6"
+version = "0.6.*"
 features = ["extension-module"]
 
 [profile.release]
