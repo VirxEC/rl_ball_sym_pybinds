@@ -1,4 +1,4 @@
-# RLBot Python bindings for rl_ball_sym 0.2
+# RLBot Python bindings for rl_ball_sym 0.6
 
 ## Prerequisites:
 
