@@ -36,10 +36,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "libc"
-version = "0.2.104"
+name = "glam"
+version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b2f96d100e1cf1929e7719b7edb3b90ab5298072638fccd77be9ce942ecdfce"
+checksum = "68270e16582ea40f9c5b2fcd588fbc9cb696577222e04a64d9085cc314806a8a"
+
+[[package]]
+name = "libc"
+version = "0.2.109"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f98a04dce437184842841303488f70d0188c5f51437d2a834dc097eafa909a01"
 
 [[package]]
 name = "memchr"
@@ -58,9 +64,9 @@ dependencies = [
 
 [[package]]
 name = "paste"
-version = "1.0.5"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acbf547ad0c65e31259204bd90935776d1c693cec2f4ff7abb7a1bbbd40dfe58"
+checksum = "0744126afe1a6dd7f394cb50a716dbe086cb06e255e53d8d0185d82828358fb5"
 
 [[package]]
 name = "python3-sys"
@@ -91,25 +97,19 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "rl_ball_sym"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2f32200ab3cb7c04240b0da66bed0b97a1bfdde3db2333d8f72ff786f06a6bb"
+checksum = "589b292e9a3bb787e1c96df15cd40a45a6cf3a7da5f084e621da69506e0be2b7"
 dependencies = [
  "byteorder",
- "vvec3",
+ "glam",
 ]
 
 [[package]]
 name = "rl_ball_sym_pybinds"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "cpython",
+ "glam",
  "rl_ball_sym",
- "vvec3",
 ]
-
-[[package]]
-name = "vvec3"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2df50ff45a76b0a8099d7ae39200ad0c4f92801feca89b14e332f9198a50c01a"

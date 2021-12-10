@@ -4,7 +4,7 @@ extern crate rl_ball_sym;
 use cpython::{exc, py_fn, py_module_initializer, ObjectProtocol, PyDict, PyErr, PyObject, PyResult, Python, PythonObject};
 use rl_ball_sym::simulation::ball::Ball;
 use rl_ball_sym::simulation::game::Game;
-use vvec3::Vec3;
+use glam::Vec3A;
 
 static mut GAME: Option<Game> = None;
 const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_soccar first.";
@@ -59,11 +59,11 @@ fn set_gravity(py: Python, py_gravity: PyDict) -> PyResult<PyObject> {
         game = GAME.as_mut().unwrap();
     }
 
-    game.gravity = Vec3 {
-        x: py_gravity.get_item(py, 0).unwrap().extract(py)?,
-        y: py_gravity.get_item(py, 1).unwrap().extract(py)?,
-        z: py_gravity.get_item(py, 2).unwrap().extract(py)?,
-    };
+    game.gravity = Vec3A::new(
+        py_gravity.get_item(py, 0).unwrap().extract(py)?,
+        py_gravity.get_item(py, 1).unwrap().extract(py)?,
+        py_gravity.get_item(py, 2).unwrap().extract(py)?,
+    );
 
     Ok(py.None())
 }
@@ -84,27 +84,27 @@ fn set_ball(py: Python, py_ball: PyDict) -> PyResult<PyObject> {
     }
 
     if let Some(location) = py_ball.get_item(py, "location") {
-        game.ball.location = Vec3 {
-            x: location.get_item(py, 0)?.extract(py)?,
-            y: location.get_item(py, 1)?.extract(py)?,
-            z: location.get_item(py, 2)?.extract(py)?,
-        };
+        game.ball.location = Vec3A::new(
+            location.get_item(py, 0)?.extract(py)?,
+            location.get_item(py, 1)?.extract(py)?,
+            location.get_item(py, 2)?.extract(py)?,
+        );
     }
 
     if let Some(velocity) = py_ball.get_item(py, "velocity") {
-        game.ball.velocity = Vec3 {
-            x: velocity.get_item(py, 0)?.extract(py)?,
-            y: velocity.get_item(py, 1)?.extract(py)?,
-            z: velocity.get_item(py, 2)?.extract(py)?,
-        };
+        game.ball.velocity = Vec3A::new(
+            velocity.get_item(py, 0)?.extract(py)?,
+            velocity.get_item(py, 1)?.extract(py)?,
+            velocity.get_item(py, 2)?.extract(py)?,
+        );
     }
 
     if let Some(angular_velocity) = py_ball.get_item(py, "angular_velocity") {
-        game.ball.angular_velocity = Vec3 {
-            x: angular_velocity.get_item(py, 0)?.extract(py)?,
-            y: angular_velocity.get_item(py, 1)?.extract(py)?,
-            z: angular_velocity.get_item(py, 2)?.extract(py)?,
-        };
+        game.ball.angular_velocity = Vec3A::new(
+            angular_velocity.get_item(py, 0)?.extract(py)?,
+            angular_velocity.get_item(py, 1)?.extract(py)?,
+            angular_velocity.get_item(py, 2)?.extract(py)?,
+        );
     }
 
     if let Some(radius) = py_ball.get_item(py, "radius") {
