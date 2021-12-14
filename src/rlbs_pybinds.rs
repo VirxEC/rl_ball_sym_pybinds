@@ -14,6 +14,7 @@ py_module_initializer!(rl_ball_sym, |py, m| {
     m.add(py, "load_soccar", py_fn!(py, load_soccar()))?;
     m.add(py, "load_dropshot", py_fn!(py, load_dropshot()))?;
     m.add(py, "load_hoops", py_fn!(py, load_hoops()))?;
+    m.add(py, "load_soccar_throwback", py_fn!(py, load_soccar_throwback()))?;
     m.add(py, "set_gravity", py_fn!(py, set_gravity(gravity: PyDict)))?;
     m.add(py, "set_ball", py_fn!(py, set_ball(ball: PyDict)))?;
     m.add(py, "step_ball", py_fn!(py, step_ball(dt: f32)))?;
@@ -43,6 +44,14 @@ fn load_dropshot(py: Python) -> PyResult<PyObject> {
 fn load_hoops(py: Python) -> PyResult<PyObject> {
     unsafe {
         GAME = Some(rl_ball_sym::load_hoops());
+    }
+
+    Ok(py.None())
+}
+
+fn load_soccar_throwback(py: Python) -> PyResult<PyObject> {
+    unsafe {
+        GAME = Some(rl_ball_sym::load_soccar_throwback());
     }
 
     Ok(py.None())

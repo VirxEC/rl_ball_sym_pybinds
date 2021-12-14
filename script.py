@@ -11,7 +11,7 @@ class rl_ball_sym(BaseScript):
         super().__init__("rl_ball_sym")
 
     def main(self):
-        rlbs.load_soccar()
+        rlbs.load_soccar_throwback()
 
         while 1:
             try:

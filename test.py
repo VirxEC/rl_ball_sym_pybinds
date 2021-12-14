@@ -9,6 +9,7 @@ gamemodes = {
     "soccar": rlbs.load_soccar,
     "dropshot": rlbs.load_dropshot,
     "hoops": rlbs.load_hoops,
+    "soccar (throwback)": rlbs.load_soccar_throwback,
 }
 
 predictions = {
@@ -48,7 +49,7 @@ for gamemode_name, load_func in gamemodes.items():
         time = 0
         times = []
 
-        for _ in range(5000):
+        for _ in range(1000):
             set_random_ball()
 
             start = time_ns()
