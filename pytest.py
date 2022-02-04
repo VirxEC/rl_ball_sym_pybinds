@@ -1,7 +1,9 @@
 from random import uniform
 from time import time_ns
 
-import rl_ball_sym as rlbs
+from rlbot.utils.structures.game_data_struct import *
+
+import rl_ball_sym_pybinds as rlbs
 
 print(rlbs.__doc__)
 
@@ -19,25 +21,30 @@ predictions = {
     "get_ball_prediction_struct_for_time_full": [rlbs.get_ball_prediction_struct_for_time_full, 12],
 }
 
-def set_random_ball():
-    rlbs.set_ball({
-        "location": [
-            uniform(-4000, 4000),
-            uniform(-5020, 5020),
-            uniform(100, 1944),
-        ],
-        "velocity": [
-            uniform(-2000, 2000),
-            uniform(-2000, 2000),
-            uniform(-2000, 2000),
-        ],
-        "angular_velocity": [
-            uniform(-1, 1),
-            uniform(-1, 1),
-            uniform(-1, 1),
-        ],
-        "time": time
-    })
+
+def set_random_packet(time):
+    packet = GameTickPacket()
+
+    # set 6 cars to test the speed of tick()
+    packet.game_ball.physics.location.x = uniform(-4000, 4000)
+    packet.game_ball.physics.location.y = uniform(-5020, 5020)
+    packet.game_ball.physics.location.z = uniform(100, 1944)
+
+    packet.game_ball.physics.velocity.x = uniform(-2000, 2000)
+    packet.game_ball.physics.velocity.y = uniform(-2000, 2000)
+    packet.game_ball.physics.velocity.z = uniform(-2000, 2000)
+
+    packet.game_ball.physics.angular_velocity.x = uniform(-1, 1)
+    packet.game_ball.physics.angular_velocity.y = uniform(-1, 1)
+    packet.game_ball.physics.angular_velocity.z = uniform(-1, 1)
+
+    packet.game_ball.collision_shape.type = 1
+    packet.game_ball.collision_shape.sphere.diameter = 182.5
+    packet.game_info.world_gravity_z = -650.
+    packet.game_info.seconds_elapsed = time
+
+    rlbs.tick(packet)
+
 
 for gamemode_name, load_func in gamemodes.items():
     load_func()
@@ -50,7 +57,7 @@ for gamemode_name, load_func in gamemodes.items():
         times = []
 
         for _ in range(1000):
-            set_random_ball()
+            set_random_packet(time)
 
             start = time_ns()
 

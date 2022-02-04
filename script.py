@@ -3,7 +3,7 @@ from traceback import print_exc
 from rlbot.agents.base_script import BaseScript
 from rlbot.utils.structures.game_data_struct import GameTickPacket
 
-import rl_ball_sym as rlbs
+import rl_ball_sym_pybinds as rlbs
 
 
 class rl_ball_sym(BaseScript):
@@ -11,7 +11,7 @@ class rl_ball_sym(BaseScript):
         super().__init__("rl_ball_sym")
 
     def main(self):
-        rlbs.load_soccar_throwback()
+        rlbs.load_soccar()
 
         while 1:
             try:

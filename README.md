@@ -1,18 +1,18 @@
-# RLBot Python bindings for rl_ball_sym 0.6
+# RLBot Python bindings for rl_ball_sym 1.0.2
 
 ## Prerequisites:
 
 + [Rust & Cargo](https://www.rust-lang.org/)
   + [Build Tools for Visual Studio](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019)
 + [RLBot](https://rlbot.org) - Verify that the file `%localappdata%\RLBotGUIX\Python37\python.exe` exists. If it doesn't, please re-download and re-install from the website to update.
++ Maturin - Downloaded onto your main global Python installion, you can install via `pip install maturin`
 
 ## Steps to build the Python bindings
 
 1. Download this repository
-2. Run `cargo_build_release.bat`
-3. A new file, called `rl_ball_sym.pyd`, will appear
-4. Copy `rl_ball_sym.pyd` to your Python project's source folder
-5. `import rl_ball_sym` in your Python file
+3. Run `develop.bat`
+4. The package will be automatically installed into RLBot's Python installation
+5. `import rl_ball_sym_pybinds` in your Python file
 
 ## Basic usage in an RLBot script to render the path prediction
 
@@ -24,7 +24,7 @@ from traceback import print_exc
 from rlbot.agents.base_script import BaseScript
 from rlbot.utils.structures.game_data_struct import GameTickPacket
 
-import rl_ball_sym as rlbs
+import rl_ball_sym_pybinds as rlbs
 
 
 class rl_ball_sym(BaseScript):
@@ -37,16 +37,8 @@ class rl_ball_sym(BaseScript):
         while 1:
             try:
                 self.packet: GameTickPacket = self.wait_game_tick_packet()
-                current_location = self.packet.game_ball.physics.location
-                current_velocity = self.packet.game_ball.physics.velocity
-                current_angular_velocity = self.packet.game_ball.physics.angular_velocity
 
-                rlbs.set_ball({
-                    "time": self.packet.game_info.seconds_elapsed,
-                    "location": [current_location.x, current_location.y, current_location.z],
-                    "velocity": [current_velocity.x, current_velocity.y, current_velocity.z],
-                    "angular_velocity": [current_angular_velocity.x, current_angular_velocity.y, current_angular_velocity.z],
-                })
+                rlbs.tick(packet)
 
                 path_prediction = rlbs.get_ball_prediction_struct()
 
@@ -159,51 +151,9 @@ Loads in the field for a standard dropshot game.
 
 Loads in the field for a standard hoops game.
 
-## set_ball
+## tick
 
-Sets information related to the ball. Accepts a Python dictionary. You don't have to set everything - you can exclude keys at will.
-
-### time
-
-The seconds that the game has elapsed for.
-
-### location
-
-The ball's location, in an array in the format `[x, y, z]`.
-
-### velocity
-
-The ball's velocity, in an array in the format `[x, y, z]`.
-
-### angular_velocity
-
-The ball's angular velocity, in an array in the format `[x, y, z]`.
-
-### radius
-
-The ball's radius.
-
-Defaults:
-
-+ Soccar - 91.25
-+ Dropshot - 100.45
-+ Hoops - 91.25
-
-### collision_radius
-
-The ball's collision radius.
-
-Defaults:
-
-+ Soccar - 93.15
-+ Dropshot - 103.6
-+ Hoops - 93.15
-
-## set_gravity
-
-Sets information about game's gravity.
-
-Accepts an array in the format `[x, y, z]`.
+Sets information related to the game.
 
 ## step_ball
 
