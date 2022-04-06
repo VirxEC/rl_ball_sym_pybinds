@@ -96,10 +96,10 @@ fn get_ball_prediction_struct(py: Python) -> PyResult<&PyDict> {
     let game = game_guard.as_mut().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
 
     let raw_ball_struct = Ball::get_ball_prediction_struct(game);
-    let mut slices = Vec::with_capacity(raw_ball_struct.num_slices);
+    let mut slices = Vec::with_capacity(raw_ball_struct.len());
     let mut should_add = false;
 
-    for raw_slice in raw_ball_struct.slices {
+    for raw_slice in raw_ball_struct {
         should_add = !should_add;
 
         if should_add {
@@ -126,9 +126,9 @@ fn get_ball_prediction_struct_full(py: Python) -> PyResult<&PyDict> {
     let game = game_guard.as_mut().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
 
     let raw_ball_struct = Ball::get_ball_prediction_struct(game);
-    let mut slices = Vec::with_capacity(raw_ball_struct.num_slices);
+    let mut slices = Vec::with_capacity(raw_ball_struct.len());
 
-    for raw_slice in raw_ball_struct.slices {
+    for raw_slice in raw_ball_struct {
         let slice = PyDict::new(py);
         slice.set_item("time", raw_slice.time).unwrap();
 
@@ -145,8 +145,8 @@ fn get_ball_prediction_struct_full(py: Python) -> PyResult<&PyDict> {
     }
 
     let ball_struct = PyDict::new(py);
+    ball_struct.set_item("num_slices", slices.len()).unwrap();
     ball_struct.set_item("slices", slices).unwrap();
-    ball_struct.set_item("num_slices", raw_ball_struct.num_slices).unwrap();
 
     Ok(ball_struct)
 }
@@ -157,10 +157,10 @@ fn get_ball_prediction_struct_for_time(py: Python, time: f32) -> PyResult<&PyDic
     let game = game_guard.as_mut().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
 
     let raw_ball_struct = Ball::get_ball_prediction_struct_for_time(game, &time);
-    let mut slices = Vec::with_capacity(raw_ball_struct.num_slices);
+    let mut slices = Vec::with_capacity(raw_ball_struct.len());
     let mut should_add = false;
 
-    for raw_slice in raw_ball_struct.slices {
+    for raw_slice in raw_ball_struct {
         should_add = !should_add;
 
         if should_add {
@@ -175,8 +175,8 @@ fn get_ball_prediction_struct_for_time(py: Python, time: f32) -> PyResult<&PyDic
     }
 
     let ball_struct = PyDict::new(py);
-    ball_struct.set_item("slices", &slices).unwrap();
     ball_struct.set_item("num_slices", slices.len()).unwrap();
+    ball_struct.set_item("slices", slices).unwrap();
 
     Ok(ball_struct)
 }
@@ -187,9 +187,9 @@ fn get_ball_prediction_struct_for_time_full(py: Python, time: f32) -> PyResult<&
     let game = game_guard.as_mut().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
 
     let raw_ball_struct = Ball::get_ball_prediction_struct_for_time(game, &time);
-    let mut slices = Vec::with_capacity(raw_ball_struct.num_slices);
+    let mut slices = Vec::with_capacity(raw_ball_struct.len());
 
-    for raw_slice in raw_ball_struct.slices {
+    for raw_slice in raw_ball_struct {
         let slice = PyDict::new(py);
         slice.set_item("time", raw_slice.time).unwrap();
 
@@ -206,8 +206,8 @@ fn get_ball_prediction_struct_for_time_full(py: Python, time: f32) -> PyResult<&
     }
 
     let ball_struct = PyDict::new(py);
+    ball_struct.set_item("num_slices", slices.len()).unwrap();
     ball_struct.set_item("slices", slices).unwrap();
-    ball_struct.set_item("num_slices", raw_ball_struct.num_slices).unwrap();
 
     Ok(ball_struct)
 }
