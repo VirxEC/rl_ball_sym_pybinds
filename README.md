@@ -1,9 +1,8 @@
-# RLBot Python bindings for rl_ball_sym 1.0.2
+# RLBot Python bindings for rl_ball_sym 1.0.6
 
 ## Prerequisites:
 
 + [Rust & Cargo](https://www.rust-lang.org/)
-  + [Build Tools for Visual Studio](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019)
 + [RLBot](https://rlbot.org) - Verify that the file `%localappdata%\RLBotGUIX\Python37\python.exe` exists. If it doesn't, please re-download and re-install from the website to update.
 + Maturin - Downloaded onto your main global Python installion, you can install via `pip install maturin`
 
