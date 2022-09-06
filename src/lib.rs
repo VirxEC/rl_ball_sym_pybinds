@@ -1,15 +1,16 @@
-use glam::Vec3A;
-use lazy_static::lazy_static;
 use pyo3::{exceptions, prelude::*, types::PyDict, PyErr};
-use rl_ball_sym::simulation::{ball::Ball, game::Game};
-use std::sync::Mutex;
+use rl_ball_sym::{
+    glam::Vec3A,
+    simulation::{ball::Ball, game::Game},
+};
+use std::sync::RwLock;
 
-lazy_static! {
-    static ref GAME: Mutex<Option<Game>> = Mutex::new(None);
-    static ref BALL: Mutex<Option<Ball>> = Mutex::new(None);
-}
-
+static GAME: RwLock<Option<Game>> = RwLock::new(None);
+type NoGamePyErr = exceptions::PyNameError;
 const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_soccar first.";
+
+static BALL: RwLock<Option<Ball>> = RwLock::new(None);
+type NoBallPyErr = exceptions::PyNameError;
 const NO_BALL_ERR: &str = "BALL is unset. Call a function like load_soccar first.";
 
 #[pymodule]
@@ -29,29 +30,29 @@ fn rl_ball_sym_pybinds(_py: Python, m: &PyModule) -> PyResult<()> {
 #[pyfunction]
 fn load_soccar() {
     let (game, ball) = rl_ball_sym::load_soccar();
-    *GAME.lock().expect("GAME lock was poisoned") = Some(game);
-    *BALL.lock().expect("BALL lock was poisoned") = Some(ball);
+    *GAME.write().expect("GAME lock was poisoned") = Some(game);
+    *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
 
 #[pyfunction]
 fn load_dropshot() {
     let (game, ball) = rl_ball_sym::load_dropshot();
-    *GAME.lock().expect("GAME lock was poisoned") = Some(game);
-    *BALL.lock().expect("BALL lock was poisoned") = Some(ball);
+    *GAME.write().expect("GAME lock was poisoned") = Some(game);
+    *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
 
 #[pyfunction]
 fn load_hoops() {
     let (game, ball) = rl_ball_sym::load_hoops();
-    *GAME.lock().expect("GAME lock was poisoned") = Some(game);
-    *BALL.lock().expect("BALL lock was poisoned") = Some(ball);
+    *GAME.write().expect("GAME lock was poisoned") = Some(game);
+    *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
 
 #[pyfunction]
 fn load_soccar_throwback() {
     let (game, ball) = rl_ball_sym::load_soccar_throwback();
-    *GAME.lock().expect("GAME lock was poisoned") = Some(game);
-    *BALL.lock().expect("BALL lock was poisoned") = Some(ball);
+    *GAME.write().expect("GAME lock was poisoned") = Some(game);
+    *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
 
 fn get_vec3_named(py_vec: &PyAny) -> PyResult<Vec3A> {
@@ -64,11 +65,11 @@ fn get_vec3_named(py_vec: &PyAny) -> PyResult<Vec3A> {
 
 #[pyfunction]
 fn tick(py: Python, packet: PyObject) -> PyResult<()> {
-    let mut game_guard = GAME.lock().expect("GAME lock was poisoned");
-    let game = game_guard.as_mut().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
+    let mut game_guard = GAME.write().expect("GAME lock was poisoned");
+    let game = game_guard.as_mut().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-    let mut ball_guard = BALL.lock().expect("BALL lock was poisoned");
-    let ball = ball_guard.as_mut().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_BALL_ERR))?;
+    let mut ball_guard = BALL.write().expect("BALL lock was poisoned");
+    let ball = ball_guard.as_mut().ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
     let packet = packet.as_ref(py);
 
@@ -99,10 +100,10 @@ fn tick(py: Python, packet: PyObject) -> PyResult<()> {
 
 #[pyfunction]
 fn get_ball_prediction_struct(py: Python) -> PyResult<&PyDict> {
-    let game_guard = GAME.lock().expect("GAME lock was poisoned");
-    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
+    let game_guard = GAME.read().expect("GAME lock was poisoned");
+    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-    let mut ball = BALL.lock().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_BALL_ERR))?;
+    let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
     let raw_ball_struct = ball.get_ball_prediction_struct(game);
     let mut slices = Vec::with_capacity(raw_ball_struct.len());
@@ -131,10 +132,10 @@ fn get_ball_prediction_struct(py: Python) -> PyResult<&PyDict> {
 
 #[pyfunction]
 fn get_ball_prediction_struct_full(py: Python) -> PyResult<&PyDict> {
-    let game_guard = GAME.lock().expect("GAME lock was poisoned");
-    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
+    let game_guard = GAME.read().expect("GAME lock was poisoned");
+    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-    let mut ball = BALL.lock().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_BALL_ERR))?;
+    let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
     let raw_ball_struct = ball.get_ball_prediction_struct(game);
     let mut slices = Vec::with_capacity(raw_ball_struct.len());
@@ -164,10 +165,10 @@ fn get_ball_prediction_struct_full(py: Python) -> PyResult<&PyDict> {
 
 #[pyfunction]
 fn get_ball_prediction_struct_for_time(py: Python, time: f32) -> PyResult<&PyDict> {
-    let game_guard = GAME.lock().expect("GAME lock was poisoned");
-    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
+    let game_guard = GAME.read().expect("GAME lock was poisoned");
+    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-    let mut ball = BALL.lock().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_BALL_ERR))?;
+    let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
     let raw_ball_struct = ball.get_ball_prediction_struct_for_time(game, &time);
     let mut slices = Vec::with_capacity(raw_ball_struct.len());
@@ -196,10 +197,10 @@ fn get_ball_prediction_struct_for_time(py: Python, time: f32) -> PyResult<&PyDic
 
 #[pyfunction]
 fn get_ball_prediction_struct_for_time_full(py: Python, time: f32) -> PyResult<&PyDict> {
-    let game_guard = GAME.lock().expect("GAME lock was poisoned");
-    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_GAME_ERR))?;
+    let game_guard = GAME.read().expect("GAME lock was poisoned");
+    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-    let mut ball = BALL.lock().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<exceptions::PyNameError, _>(NO_BALL_ERR))?;
+    let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
     let raw_ball_struct = ball.get_ball_prediction_struct_for_time(game, &time);
     let mut slices = Vec::with_capacity(raw_ball_struct.len());

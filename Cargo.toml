@@ -1,7 +1,8 @@
 [package]
 name = "rl_ball_sym_pybinds"
-version = "1.0.6"
+version = "1.0.7"
 edition = "2021"
+rust-version = "1.63"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,15 +11,14 @@ crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 [dependencies]
-glam = "0.21.2"
-rl_ball_sym = "2.0.0"
-lazy_static = "1.4"
+rl_ball_sym = "2.1"
 
 [dependencies.pyo3]
-version = "0.16"
-features = ["extension-module"]
+version = "0.17.1"
+features = ["extension-module", "abi3-py37"]
 
 [profile.release]
 codegen-units=1
 lto = "fat"
 panic = "abort"
+strip = true
