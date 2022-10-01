@@ -64,4 +64,4 @@ For documentation, see `rl_ball_sym_pybinds.pyi`.
 
 Results of `pytest.py`:
 
-![get_ball_prediction_struct takes 0.08ms to execute in soccer](https://raw.githubusercontent.com/VirxEC/rl_ball_sym_pybinds/master/rlbs.png)
+![get_ball_prediction_struct takes 0.08ms to execute in soccer](https://raw.githubusercontent.com/VirxEC/rl_ball_sym_pybinds/master/rlbs_bench.png)
