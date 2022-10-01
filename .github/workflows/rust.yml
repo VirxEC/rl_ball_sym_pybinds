@@ -73,11 +73,6 @@ jobs:
         manylinux: auto
         container: quay.io/pypa/manylinux_2_28_x86_64:latest
         args: --release --out dist
-    - name: Install built wheel
-      run: |
-        pip install rlbot
-        pip install rl_ball_sym_pybinds  --no-index --find-links dist --force-reinstall
-        python pytest.py
     - name: Upload wheels
       uses: actions/upload-artifact@v2
       with:
