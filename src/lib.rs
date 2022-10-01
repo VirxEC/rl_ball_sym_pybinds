@@ -1,4 +1,7 @@
-use pyo3::{exceptions, prelude::*, types::PyDict, PyErr};
+mod pytypes;
+
+use pyo3::{exceptions, prelude::*, PyErr};
+use pytypes::*;
 use rl_ball_sym::{
     glam::Vec3A,
     simulation::{ball::Ball, game::Game},
@@ -7,31 +10,42 @@ use std::sync::RwLock;
 
 static GAME: RwLock<Option<Game>> = RwLock::new(None);
 type NoGamePyErr = exceptions::PyNameError;
-const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_soccar first.";
+const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_soccer first.";
 
 static BALL: RwLock<Option<Ball>> = RwLock::new(None);
 type NoBallPyErr = exceptions::PyNameError;
-const NO_BALL_ERR: &str = "BALL is unset. Call a function like load_soccar first.";
+const NO_BALL_ERR: &str = "BALL is unset. Call a function like load_soccer first.";
 
 #[pymodule]
+/// rl_ball_sym is a Rust implementation of ball path prediction for Rocket League; Inspired by Samuel (Chip) P. Mish's C++ utils called RLUtilities
 fn rl_ball_sym_pybinds(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(load_soccer, m)?)?;
     m.add_function(wrap_pyfunction!(load_soccar, m)?)?;
     m.add_function(wrap_pyfunction!(load_dropshot, m)?)?;
     m.add_function(wrap_pyfunction!(load_hoops, m)?)?;
     m.add_function(wrap_pyfunction!(load_soccar_throwback, m)?)?;
+    m.add_function(wrap_pyfunction!(load_soccer_throwback, m)?)?;
     m.add_function(wrap_pyfunction!(tick, m)?)?;
+    m.add_function(wrap_pyfunction!(step_ball, m)?)?;
     m.add_function(wrap_pyfunction!(get_ball_prediction_struct, m)?)?;
     m.add_function(wrap_pyfunction!(get_ball_prediction_struct_for_time, m)?)?;
     m.add_function(wrap_pyfunction!(get_ball_prediction_struct_full, m)?)?;
     m.add_function(wrap_pyfunction!(get_ball_prediction_struct_for_time_full, m)?)?;
+    m.add_class::<BallSlice>()?;
+    m.add_class::<BallPredictionStruct>()?;
     Ok(())
 }
 
 #[pyfunction]
-fn load_soccar() {
-    let (game, ball) = rl_ball_sym::load_soccar();
+fn load_soccer() {
+    let (game, ball) = rl_ball_sym::load_soccer();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = Some(ball);
+}
+
+#[pyfunction]
+fn load_soccar() {
+    load_soccer();
 }
 
 #[pyfunction]
@@ -49,12 +63,18 @@ fn load_hoops() {
 }
 
 #[pyfunction]
-fn load_soccar_throwback() {
+fn load_soccer_throwback() {
     let (game, ball) = rl_ball_sym::load_soccar_throwback();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
 
+#[pyfunction]
+fn load_soccar_throwback() {
+    load_soccer_throwback()
+}
+
+#[inline]
 fn get_vec3_named(py_vec: &PyAny) -> PyResult<Vec3A> {
     Ok(Vec3A::new(
         py_vec.getattr("x")?.extract()?,
@@ -91,139 +111,55 @@ fn tick(py: Python, packet: PyObject) -> PyResult<()> {
 
     let py_ball_shape = py_ball.getattr("collision_shape")?;
 
-    ball.radius = py_ball_shape.getattr("sphere")?.getattr("diameter")?.extract::<f32>()? / 2.;
-    ball.collision_radius = ball.radius + 1.9;
-    ball.calculate_moi();
+    let radius = py_ball_shape.getattr("sphere")?.getattr("diameter")?.extract::<f32>()? / 2.;
+    ball.set_radius(radius, radius + 1.9);
 
     Ok(())
 }
 
 #[pyfunction]
-fn get_ball_prediction_struct(py: Python) -> PyResult<&PyDict> {
+fn step_ball() -> PyResult<BallSlice> {
     let game_guard = GAME.read().expect("GAME lock was poisoned");
     let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
+    let mut ball_guard = BALL.write().expect("BALL lock was poisoned");
+    let ball = ball_guard.as_mut().ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR)).unwrap();
 
-    let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
-
-    let raw_ball_struct = ball.get_ball_prediction_struct(game);
-    let mut slices = Vec::with_capacity(raw_ball_struct.len());
-    let mut should_add = false;
-
-    for raw_slice in raw_ball_struct {
-        should_add = !should_add;
-
-        if should_add {
-            let slice = PyDict::new(py);
-            slice.set_item("time", raw_slice.time).unwrap();
-
-            slice.set_item("location", vec![raw_slice.location.x, raw_slice.location.y, raw_slice.location.z]).unwrap();
-            slice.set_item("velocity", vec![raw_slice.velocity.x, raw_slice.velocity.y, raw_slice.velocity.z]).unwrap();
-
-            slices.push(slice);
-        }
-    }
-
-    let ball_struct = PyDict::new(py);
-    ball_struct.set_item("num_slices", slices.len()).unwrap();
-    ball_struct.set_item("slices", slices).unwrap();
-
-    Ok(ball_struct)
+    ball.step(game, 1. / 120.);
+    Ok(BallSlice::from_rl_ball_sym(*ball))
 }
 
 #[pyfunction]
-fn get_ball_prediction_struct_full(py: Python) -> PyResult<&PyDict> {
+fn get_ball_prediction_struct() -> PyResult<HalfBallPredictionStruct> {
     let game_guard = GAME.read().expect("GAME lock was poisoned");
     let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
-
     let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
-    let raw_ball_struct = ball.get_ball_prediction_struct(game);
-    let mut slices = Vec::with_capacity(raw_ball_struct.len());
-
-    for raw_slice in raw_ball_struct {
-        let slice = PyDict::new(py);
-        slice.set_item("time", raw_slice.time).unwrap();
-
-        slice.set_item("location", vec![raw_slice.location.x, raw_slice.location.y, raw_slice.location.z]).unwrap();
-        slice.set_item("velocity", vec![raw_slice.velocity.x, raw_slice.velocity.y, raw_slice.velocity.z]).unwrap();
-        slice
-            .set_item(
-                "angular_velocity",
-                vec![raw_slice.angular_velocity.x, raw_slice.angular_velocity.y, raw_slice.angular_velocity.z],
-            )
-            .unwrap();
-
-        slices.push(slice);
-    }
-
-    let ball_struct = PyDict::new(py);
-    ball_struct.set_item("num_slices", slices.len()).unwrap();
-    ball_struct.set_item("slices", slices).unwrap();
-
-    Ok(ball_struct)
+    Ok(HalfBallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct(game)))
 }
 
 #[pyfunction]
-fn get_ball_prediction_struct_for_time(py: Python, time: f32) -> PyResult<&PyDict> {
+fn get_ball_prediction_struct_full() -> PyResult<BallPredictionStruct> {
     let game_guard = GAME.read().expect("GAME lock was poisoned");
     let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
-
     let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
-    let raw_ball_struct = ball.get_ball_prediction_struct_for_time(game, &time);
-    let mut slices = Vec::with_capacity(raw_ball_struct.len());
-    let mut should_add = false;
-
-    for raw_slice in raw_ball_struct {
-        should_add = !should_add;
-
-        if should_add {
-            let slice = PyDict::new(py);
-            slice.set_item("time", raw_slice.time).unwrap();
-
-            slice.set_item("location", vec![raw_slice.location.x, raw_slice.location.y, raw_slice.location.z]).unwrap();
-            slice.set_item("velocity", vec![raw_slice.velocity.x, raw_slice.velocity.y, raw_slice.velocity.z]).unwrap();
-
-            slices.push(slice);
-        }
-    }
-
-    let ball_struct = PyDict::new(py);
-    ball_struct.set_item("num_slices", slices.len()).unwrap();
-    ball_struct.set_item("slices", slices).unwrap();
-
-    Ok(ball_struct)
+    Ok(BallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct(game)))
 }
 
 #[pyfunction]
-fn get_ball_prediction_struct_for_time_full(py: Python, time: f32) -> PyResult<&PyDict> {
+fn get_ball_prediction_struct_for_time(time: f32) -> PyResult<HalfBallPredictionStruct> {
     let game_guard = GAME.read().expect("GAME lock was poisoned");
     let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
-
     let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
-    let raw_ball_struct = ball.get_ball_prediction_struct_for_time(game, &time);
-    let mut slices = Vec::with_capacity(raw_ball_struct.len());
+    Ok(HalfBallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct_for_time(game, &time)))
+}
 
-    for raw_slice in raw_ball_struct {
-        let slice = PyDict::new(py);
-        slice.set_item("time", raw_slice.time).unwrap();
+#[pyfunction]
+fn get_ball_prediction_struct_for_time_full(time: f32) -> PyResult<BallPredictionStruct> {
+    let game_guard = GAME.read().expect("GAME lock was poisoned");
+    let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
+    let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
-        slice.set_item("location", vec![raw_slice.location.x, raw_slice.location.y, raw_slice.location.z]).unwrap();
-        slice.set_item("velocity", vec![raw_slice.velocity.x, raw_slice.velocity.y, raw_slice.velocity.z]).unwrap();
-        slice
-            .set_item(
-                "angular_velocity",
-                vec![raw_slice.angular_velocity.x, raw_slice.angular_velocity.y, raw_slice.angular_velocity.z],
-            )
-            .unwrap();
-
-        slices.push(slice);
-    }
-
-    let ball_struct = PyDict::new(py);
-    ball_struct.set_item("num_slices", slices.len()).unwrap();
-    ball_struct.set_item("slices", slices).unwrap();
-
-    Ok(ball_struct)
+    Ok(BallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct_for_time(game, &time)))
 }

@@ -1,6 +1,6 @@
 [package]
 name = "rl_ball_sym_pybinds"
-version = "1.0.7"
+version = "1.1.0"
 edition = "2021"
 rust-version = "1.63"
 
@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 [dependencies]
-rl_ball_sym = "2.1"
+rl_ball_sym = "2.2.1"
 
 [dependencies.pyo3]
 version = "0.17.1"

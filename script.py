@@ -11,7 +11,7 @@ class rl_ball_sym(BaseScript):
         super().__init__("rl_ball_sym")
 
     def main(self):
-        rlbs.load_soccar()
+        rlbs.load_soccer()
 
         while 1:
             try:
@@ -24,7 +24,7 @@ class rl_ball_sym(BaseScript):
 
                 self.renderer.begin_rendering()
                 self.renderer.draw_polyline_3d(tuple((framework_prediction.slices[i].physics.location.x, framework_prediction.slices[i].physics.location.y, framework_prediction.slices[i].physics.location.z) for i in range(0, framework_prediction.num_slices, 4)), self.renderer.green())
-                self.renderer.draw_polyline_3d(tuple((custom_prediction["slices"][i]["location"][0], custom_prediction["slices"][i]["location"][1], custom_prediction["slices"][i]["location"][2]) for i in range(0, custom_prediction["num_slices"], 4)), self.renderer.red())
+                self.renderer.draw_polyline_3d(tuple(custom_prediction.slices[i].location for i in range(0, custom_prediction.num_slices, 4)), self.renderer.red())
                 self.renderer.end_rendering()
             except Exception:
                 print_exc()

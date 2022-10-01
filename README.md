@@ -33,7 +33,7 @@ class rl_ball_sym(BaseScript):
         super().__init__("rl_ball_sym")
 
     def main(self):
-        rlbs.load_soccar()
+        rlbs.load_soccer()
 
         while 1:
             try:
@@ -56,167 +56,12 @@ if __name__ == "__main__":
 
 ```
 
-## Example ball prediction struct
+## Documentation
 
-### Normal
+For documentation, see `rl_ball_sym_pybinds.pyi`.
 
-```python
-[
-    {
-        "time": 0.008333,
-        "location": [
-            -2283.9,
-            1683.8,
-            323.4,
-        ],
-        "velocity": [
-            1273.4,
-            -39.7,
-            757.6,
-        ]
-    },
-    {
-        "time": 0.025,
-        "location": [
-            -2262.6,
-            1683.1,
-            335.9,
-        ],
-        "velocity": [
-            1272.7,
-            -39.7,
-            746.4,
-        ]
-    }
-    ...
-]
-```
+## Benchmarks
 
-### Full
+Results of `pytest.py`:
 
-```python
-[
-    {
-        "time": 0.008333,
-        "location": [
-            -2283.9,
-            1683.8,
-            323.4,
-        ],
-        "velocity": [
-            1273.4,
-            -39.7,
-            757.6,
-        ]
-        "angular_velocity": [
-            2.3,
-            -0.8,
-            3.8,
-        }
-    },
-    {
-        "time": 0.016666,
-        "location": [
-            -2273.3,
-            1683.4,
-            329.7,
-        ],
-        "velocity": [
-            1273.1,
-            -39.7,
-            752.0,
-        ],
-        "angular_velocity": [
-            2.3,
-            -0.8,
-            3.8
-        ]
-    }
-    ...
-]
-```
-
-## \_\_doc__
-
-Returns the string `rl_ball_sym is a Rust implementation of ball path prediction for Rocket League; Inspired by Samuel (Chip) P. Mish's C++ utils called RLUtilities`
-
-## load_soccar
-
-Loads in the field for a standard soccar game.
-
-## load_dropshot
-
-Loads in the field for a standard dropshot game.
-
-## load_hoops
-
-Loads in the field for a standard hoops game.
-
-## tick
-
-Sets information related to the game.
-
-## step_ball
-
-Steps the ball by `1/120` seconds into the future every time it's called.
-
-For convience, also returns the new information about the ball.
-
-Example:
-
-```python
-{
-    "time": 0.008333,
-    "location": [
-        -2283.9,
-        1683.8,
-        323.4,
-    ],
-    "velocity": [
-        1273.4,
-        -39.7,
-        757.6,
-    ]
-    "angular_velocity": [
-        2.3,
-        -0.8,
-        3.8,
-    }
-}
-```
-
-## get_ball_prediction_struct
-
-Equivalent to calling `step_ball()` 720 times (6 seconds).
-
-Returns a normal-type ball prediction struct.
-
-![get_ball_prediction_struct takes 0.3ms to execute](https://raw.githubusercontent.com/VirxEC/rl_ball_sym_pybinds/master/gbps_bench.png)
-
-## get_ball_prediction_struct_full
-
-Equivalent to calling `step_ball()` 720 times (6 seconds).
-
-Returns a full-type ball prediction struct.
-
-![get_ball_prediction_struct_full takes 0.54ms to execute](https://raw.githubusercontent.com/VirxEC/rl_ball_sym_pybinds/master/gbpsft_bench.png)
-
-## get_ball_prediction_struct_for_time
-
-Equivalent to calling `step_ball()` 120 * `time` times.
-
-Returns a normal-type ball prediction struct.
-
-### time
-
-The seconds into the future that the ball path prediction should be generated.
-
-## get_ball_prediction_struct_full_for_time
-
-Equivalent to calling `step_ball()` 120 * `time` times.
-
-Returns a full-type ball prediction struct.
-
-### time
-
-The seconds into the future that the ball path prediction should be generated.
+![get_ball_prediction_struct takes 0.08ms to execute in soccer](https://raw.githubusercontent.com/VirxEC/rl_ball_sym_pybinds/master/rlbs.png)

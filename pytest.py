@@ -8,10 +8,10 @@ import rl_ball_sym_pybinds as rlbs
 print(rlbs.__doc__)
 
 gamemodes = {
-    "soccar": rlbs.load_soccar,
+    "soccer": rlbs.load_soccer,
     "dropshot": rlbs.load_dropshot,
     "hoops": rlbs.load_hoops,
-    "soccar (throwback)": rlbs.load_soccar_throwback,
+    "soccer (throwback)": rlbs.load_soccer_throwback,
 }
 
 predictions = {
@@ -46,6 +46,24 @@ def set_random_packet(time):
     rlbs.tick(packet)
 
 
+gamemodes["soccer"]()
+for prediction_name, prediction_func in predictions.items():
+    print()
+    set_random_packet(0)
+
+    if len(prediction_func) == 1:
+        prediction = prediction_func[0]()
+    else:
+        prediction = prediction_func[0](prediction_func[1])
+
+    print(prediction)
+    print(repr(prediction))
+
+    ball_slice = prediction.slices[50]
+    print(ball_slice)
+    print(repr(ball_slice))
+
+
 for gamemode_name, load_func in gamemodes.items():
     load_func()
 
@@ -56,7 +74,7 @@ for gamemode_name, load_func in gamemodes.items():
         time = 0
         times = []
 
-        for _ in range(1000):
+        for _ in range(2000):
             set_random_packet(time)
 
             start = time_ns()
