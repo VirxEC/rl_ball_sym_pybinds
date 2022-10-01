@@ -1,5 +1,7 @@
 # RLBot Python bindings for rl_ball_sym 1.0.7
 
+Pre-built binaries for Python 3.7 and beyond in Windows & Linux can be found [here in the build artifacts for the latest workflow run](https://github.com/VirxEC/rl_ball_sym_pybinds/actions).
+
 ## Prerequisites:
 
 + [Rust & Cargo](https://www.rust-lang.org/)
