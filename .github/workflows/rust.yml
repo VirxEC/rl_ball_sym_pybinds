@@ -1,0 +1,85 @@
+name: Build & Deploy Files
+
+env:
+  CARGO_TERM_COLOR: always
+
+on:
+  push:
+    branches: [ "master" ]
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+          architecture: x64
+      - uses: actions/cache@v3.0.4
+        id: cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target
+          key: ${{ runner.os }}-cargo
+      - name: Build wheels
+        uses: messense/maturin-action@v1
+        with:
+          target: x64
+          args: --release --out dist
+      - name: Install built wheel
+        run: |
+          pip install rlbot
+          pip install rl_ball_sym_pybinds  --no-index --find-links dist --force-reinstall
+          python pytest.py
+      - name: Upload wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: wheels
+          path: dist
+
+  linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v3.0.4
+      id: cache
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target
+        key: ${{ runner.os }}-cargo
+    - name: Build wheels
+      uses: messense/maturin-action@v1
+      with:
+        target: x86_64
+        manylinux: auto
+        container: quay.io/pypa/manylinux_2_28_x86_64:latest
+        args: --release --out dist -m python/Cargo.toml
+    - name: Install built wheel
+      run: |
+        pip install rlbot
+        pip install rl_ball_sym_pybinds  --no-index --find-links dist --force-reinstall
+        python pytest.py
+    - name: Upload wheels
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheels
+        path: dist
