@@ -72,7 +72,7 @@ jobs:
         target: x86_64
         manylinux: auto
         container: quay.io/pypa/manylinux_2_28_x86_64:latest
-        args: --release --out dist -m python/Cargo.toml
+        args: --release --out dist
     - name: Install built wheel
       run: |
         pip install rlbot
