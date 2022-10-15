@@ -1,6 +1,85 @@
 use pyo3::prelude::*;
 use rl_ball_sym::{Ball, BallPrediction, Vec3A};
 
+#[derive(FromPyObject, Debug)]
+pub struct GameVec {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
+}
+
+impl From<GameVec> for Vec3A {
+    #[inline]
+    fn from(gv: GameVec) -> Self {
+        Vec3A::new(gv.x, gv.y, gv.z)
+    }
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GameSphere {
+    pub diameter: f32,
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GameBox {
+    pub length: f32,
+    pub width: f32,
+    pub height: f32,
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GameCylinder {
+    pub diameter: f32,
+    pub height: f32,
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GameCollisionShape {
+    #[pyo3(attribute("type"))]
+    shape_type: usize,
+    #[pyo3(attribute("box"))]
+    box_: GameBox,
+    sphere: GameSphere,
+    cylinder: GameCylinder,
+}
+
+impl GameCollisionShape {
+    #[inline]
+    pub fn get_radius(&self) -> f32 {
+        match self.shape_type {
+            0 => (self.box_.length + self.box_.width + self.box_.height) / 6.,
+            1 => self.sphere.diameter / 2.,
+            2 => self.cylinder.diameter / 2.,
+            _ => panic!("Invalid shape type: {}", self.shape_type),
+        }
+    }
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GamePhysics {
+    pub location: GameVec,
+    pub velocity: GameVec,
+    pub angular_velocity: GameVec,
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GameBall {
+    pub physics: GamePhysics,
+    pub collision_shape: GameCollisionShape,
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GameInfo {
+    pub seconds_elapsed: f32,
+    pub world_gravity_z: f32,
+}
+
+#[derive(FromPyObject, Debug)]
+pub struct GamePacket {
+    pub game_info: GameInfo,
+    pub game_ball: GameBall,
+}
+
 #[inline]
 const fn vec3a_to_tuple(v: Vec3A) -> (f32, f32, f32) {
     let [x, y, z] = v.to_array();
@@ -125,10 +204,7 @@ impl HalfBallPredictionStruct {
     pub fn from_rl_ball_sym(raw_struct: BallPrediction) -> Self {
         let slices = raw_struct.into_iter().step_by(2).map(HalfBallSlice::from_rl_ball_sym).collect::<Vec<_>>();
 
-        Self {
-            num_slices: slices.len(),
-            slices,
-        }
+        Self { num_slices: slices.len(), slices }
     }
 }
 

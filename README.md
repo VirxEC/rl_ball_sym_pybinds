@@ -1,4 +1,6 @@
-# RLBot Python bindings for rl_ball_sym 1.1.0
+# RLBot Python bindings for rl_ball_sym
+
+[![unsafe forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg)](https://github.com/rust-secure-code/safety-dance/)
 
 Pre-built binaries for Python 3.7 and beyond in Windows & Linux can be found [here in the build artifacts for the latest workflow run](https://github.com/VirxEC/rl_ball_sym_pybinds/actions).
 
@@ -38,13 +40,11 @@ class rl_ball_sym(BaseScript):
         while 1:
             try:
                 self.packet: GameTickPacket = self.wait_game_tick_packet()
-
-                rlbs.tick(packet)
-
+                rlbs.tick(self.packet)
                 path_prediction = rlbs.get_ball_prediction_struct()
 
                 self.renderer.begin_rendering()
-                self.renderer.draw_polyline_3d(tuple((path_prediction["slices"][i]["location"][0], path_prediction["slices"][i]["location"][1], path_prediction["slices"][i]["location"][2]) for i in range(0, path_prediction["num_slices"], 4)), self.renderer.red())
+                self.renderer.draw_polyline_3d(tuple(path_prediction.slices[i].location for i in range(0, path_prediction.num_slices, 4)), self.renderer.red())
                 self.renderer.end_rendering()
             except Exception:
                 print_exc()
@@ -53,7 +53,6 @@ class rl_ball_sym(BaseScript):
 if __name__ == "__main__":
     rl_ball_sym = rl_ball_sym()
     rl_ball_sym.main()
-
 ```
 
 ## Documentation

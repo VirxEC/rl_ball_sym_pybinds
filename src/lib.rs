@@ -1,11 +1,10 @@
+#![forbid(unsafe_code)]
+
 mod pytypes;
 
 use pyo3::{exceptions, prelude::*, PyErr};
 use pytypes::*;
-use rl_ball_sym::{
-    glam::Vec3A,
-    simulation::{ball::Ball, game::Game},
-};
+use rl_ball_sym::simulation::{ball::Ball, game::Game};
 use std::sync::RwLock;
 
 static GAME: RwLock<Option<Game>> = RwLock::new(None);
@@ -71,16 +70,7 @@ fn load_soccer_throwback() {
 
 #[pyfunction]
 fn load_soccar_throwback() {
-    load_soccer_throwback()
-}
-
-#[inline]
-fn get_vec3_named(py_vec: &PyAny) -> PyResult<Vec3A> {
-    Ok(Vec3A::new(
-        py_vec.getattr("x")?.extract()?,
-        py_vec.getattr("y")?.extract()?,
-        py_vec.getattr("z")?.extract()?,
-    ))
+    load_soccer_throwback();
 }
 
 #[pyfunction]
@@ -91,27 +81,19 @@ fn tick(py: Python, packet: PyObject) -> PyResult<()> {
     let mut ball_guard = BALL.write().expect("BALL lock was poisoned");
     let ball = ball_guard.as_mut().ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
-    let packet = packet.as_ref(py);
+    let packet = packet.as_ref(py).extract::<GamePacket>()?;
 
-    let py_game_info = packet.getattr("game_info")?;
-
-    let time = py_game_info.getattr("seconds_elapsed")?.extract::<f32>()?;
-
-    game.gravity.z = py_game_info.getattr("world_gravity_z")?.extract()?;
-
-    let py_ball = packet.getattr("game_ball")?;
-    let py_ball_physics = py_ball.getattr("physics")?;
+    let time = packet.game_info.seconds_elapsed;
+    game.gravity.z = packet.game_info.world_gravity_z;
 
     ball.update(
         time,
-        get_vec3_named(py_ball_physics.getattr("location")?)?,
-        get_vec3_named(py_ball_physics.getattr("velocity")?)?,
-        get_vec3_named(py_ball_physics.getattr("angular_velocity")?)?,
+        packet.game_ball.physics.location.into(),
+        packet.game_ball.physics.velocity.into(),
+        packet.game_ball.physics.angular_velocity.into(),
     );
 
-    let py_ball_shape = py_ball.getattr("collision_shape")?;
-
-    let radius = py_ball_shape.getattr("sphere")?.getattr("diameter")?.extract::<f32>()? / 2.;
+    let radius = packet.game_ball.collision_shape.get_radius();
     ball.set_radius(radius, radius + 1.9);
 
     Ok(())
@@ -152,7 +134,7 @@ fn get_ball_prediction_struct_for_time(time: f32) -> PyResult<HalfBallPrediction
     let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
     let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
-    Ok(HalfBallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct_for_time(game, &time)))
+    Ok(HalfBallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct_for_time(game, time)))
 }
 
 #[pyfunction]
@@ -161,5 +143,5 @@ fn get_ball_prediction_struct_for_time_full(time: f32) -> PyResult<BallPredictio
     let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
     let ball = BALL.read().expect("BALL lock was poisoned").ok_or_else(|| PyErr::new::<NoBallPyErr, _>(NO_BALL_ERR))?;
 
-    Ok(BallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct_for_time(game, &time)))
+    Ok(BallPredictionStruct::from_rl_ball_sym(ball.get_ball_prediction_struct_for_time(game, time)))
 }
