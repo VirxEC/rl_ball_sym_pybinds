@@ -15,24 +15,36 @@ static BALL: RwLock<Option<Ball>> = RwLock::new(None);
 type NoBallPyErr = exceptions::PyNameError;
 const NO_BALL_ERR: &str = "BALL is unset. Call a function like load_soccer first.";
 
-#[pymodule]
-/// rl_ball_sym is a Rust implementation of ball path prediction for Rocket League; Inspired by Samuel (Chip) P. Mish's C++ utils called RLUtilities
-fn rl_ball_sym_pybinds(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(load_soccer, m)?)?;
-    m.add_function(wrap_pyfunction!(load_soccar, m)?)?;
-    m.add_function(wrap_pyfunction!(load_dropshot, m)?)?;
-    m.add_function(wrap_pyfunction!(load_hoops, m)?)?;
-    m.add_function(wrap_pyfunction!(load_soccar_throwback, m)?)?;
-    m.add_function(wrap_pyfunction!(load_soccer_throwback, m)?)?;
-    m.add_function(wrap_pyfunction!(tick, m)?)?;
-    m.add_function(wrap_pyfunction!(step_ball, m)?)?;
-    m.add_function(wrap_pyfunction!(get_ball_prediction_struct, m)?)?;
-    m.add_function(wrap_pyfunction!(get_ball_prediction_struct_for_time, m)?)?;
-    m.add_function(wrap_pyfunction!(get_ball_prediction_struct_full, m)?)?;
-    m.add_function(wrap_pyfunction!(get_ball_prediction_struct_for_time_full, m)?)?;
-    m.add_class::<BallSlice>()?;
-    m.add_class::<BallPredictionStruct>()?;
-    Ok(())
+macro_rules! pynamedmodule {
+    (doc: $doc:literal, name: $name:tt, funcs: [$($func_name:path),*], classes: [$($class_name:ident),*]) => {
+        #[doc = $doc]
+        #[pymodule]
+        fn $name(_py: Python, m: &PyModule) -> PyResult<()> {
+            $(m.add_function(wrap_pyfunction!($func_name, m)?)?);*;
+            $(m.add_class::<$class_name>()?);*;
+            Ok(())
+        }
+    };
+}
+
+pynamedmodule! {
+    doc: "rl_ball_sym is a Rust implementation of ball path prediction for Rocket League; Inspired by Samuel (Chip) P. Mish's C++ utils called RLUtilities",
+    name: rl_ball_sym_pybinds,
+    funcs: [
+        load_soccer,
+        load_soccar,
+        load_dropshot,
+        load_hoops,
+        load_soccar_throwback,
+        load_soccer_throwback,
+        tick,
+        step_ball,
+        get_ball_prediction_struct,
+        get_ball_prediction_struct_for_time,
+        get_ball_prediction_struct_full,
+        get_ball_prediction_struct_for_time_full
+    ],
+    classes: [BallSlice, BallPredictionStruct]
 }
 
 #[pyfunction]
