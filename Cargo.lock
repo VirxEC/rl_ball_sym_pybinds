@@ -34,9 +34,9 @@ checksum = "56394eb9bf4ad3c3c982b1d04c2aaa2845c4d3a7c6c6b8f366fde9811263e460"
 
 [[package]]
 name = "glam"
-version = "0.21.3"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "518faa5064866338b013ff9b2350dc318e14cc4fcd6cb8206d7e7c9886c98815"
+checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
 
 [[package]]
 name = "indoc"
@@ -46,9 +46,9 @@ checksum = "adab1eaa3408fb7f0c777a73e7465fd5656136fc93b670eb6df3c88c2c1344e3"
 
 [[package]]
 name = "libc"
-version = "0.2.135"
+version = "0.2.136"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68783febc7782c6c5cb401fbda4de5a9898be1762314da0bb2c10ced61f18b0c"
+checksum = "55edcf6c0bb319052dea84732cf99db461780fd5e8d3eb46ab6ff312ab31f197"
 
 [[package]]
 name = "lock_api"
@@ -193,9 +193,9 @@ dependencies = [
 
 [[package]]
 name = "rl_ball_sym"
-version = "2.3.1"
+version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7919cd217ef1e56d795ccf74bbb6c10500506a66e49c98e711249eb06aecbc8"
+checksum = "e6c13d98c5992b15d0486ab153fbbabab9378ac92582eb50407d644add0698dc"
 dependencies = [
  "byteorder",
  "combo_vec",
@@ -205,7 +205,7 @@ dependencies = [
 
 [[package]]
 name = "rl_ball_sym_pybinds"
-version = "1.1.2"
+version = "1.1.3"
 dependencies = [
  "pyo3",
  "rl_ball_sym",
@@ -225,9 +225,9 @@ checksum = "a507befe795404456341dfab10cef66ead4c041f62b8b11bbb92bffe5d0953e0"
 
 [[package]]
 name = "syn"
-version = "1.0.102"
+version = "1.0.103"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fcd952facd492f9be3ef0d0b7032a6e442ee9b361d4acc2b1d0c4aaa5f613a1"
+checksum = "a864042229133ada95abf3b54fdc62ef5ccabe9515b64717bcb9a1919e59445d"
 dependencies = [
  "proc-macro2",
  "quote",
