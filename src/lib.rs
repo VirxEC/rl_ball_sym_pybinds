@@ -49,7 +49,7 @@ pynamedmodule! {
 
 #[pyfunction]
 fn load_soccer() {
-    let (game, ball) = rl_ball_sym::load_soccer();
+    let (game, ball) = rl_ball_sym::compressed::load_soccer();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
@@ -61,21 +61,21 @@ fn load_soccar() {
 
 #[pyfunction]
 fn load_dropshot() {
-    let (game, ball) = rl_ball_sym::load_dropshot();
+    let (game, ball) = rl_ball_sym::compressed::load_dropshot();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
 
 #[pyfunction]
 fn load_hoops() {
-    let (game, ball) = rl_ball_sym::load_hoops();
+    let (game, ball) = rl_ball_sym::compressed::load_hoops();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
 
 #[pyfunction]
 fn load_soccer_throwback() {
-    let (game, ball) = rl_ball_sym::load_soccar_throwback();
+    let (game, ball) = rl_ball_sym::compressed::load_soccar_throwback();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = Some(ball);
 }
