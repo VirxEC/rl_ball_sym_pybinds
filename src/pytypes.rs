@@ -113,6 +113,7 @@ impl BallSlice {
 
 #[pymethods]
 impl BallSlice {
+    #[inline]
     fn __str__(&self) -> String {
         format!(
             "Ball @{:.2}s - location: {:?}, velocity: {:?}, angular velocity: {:?}",
@@ -120,6 +121,7 @@ impl BallSlice {
         )
     }
 
+    #[inline]
     fn __repr__(&self) -> String {
         format!(
             "BallSlice(time={}, location={:?}, velocity={:?}, angular_velocity={:?})",
@@ -149,10 +151,12 @@ impl BallPredictionStruct {
 
 #[pymethods]
 impl BallPredictionStruct {
+    #[inline]
     fn __str__(&self) -> String {
         format!("Ball prediction - {} slices", self.num_slices)
     }
 
+    #[inline]
     fn __repr__(&self) -> String {
         format!("BallPredictionStruct(num_slices={}, slices=[... {} items])", self.num_slices, self.slices.len())
     }
@@ -182,10 +186,12 @@ impl HalfBallSlice {
 
 #[pymethods]
 impl HalfBallSlice {
+    #[inline]
     fn __str__(&self) -> String {
         format!("Ball @{:.2}s - location: {:?}, velocity: {:?}", self.time, self.location, self.velocity)
     }
 
+    #[inline]
     fn __repr__(&self) -> String {
         format!("HalfBallSlice(time={}, location={:?}, velocity={:?})", self.time, self.location, self.velocity)
     }
@@ -201,6 +207,7 @@ pub struct HalfBallPredictionStruct {
 }
 
 impl HalfBallPredictionStruct {
+    #[inline]
     pub fn from_rl_ball_sym(raw_struct: BallPrediction) -> Self {
         let slices = raw_struct.into_iter().step_by(2).map(HalfBallSlice::from_rl_ball_sym).collect::<Vec<_>>();
 
@@ -210,10 +217,12 @@ impl HalfBallPredictionStruct {
 
 #[pymethods]
 impl HalfBallPredictionStruct {
+    #[inline]
     fn __str__(&self) -> String {
         format!("Ball prediction - {} slices", self.num_slices)
     }
 
+    #[inline]
     fn __repr__(&self) -> String {
         format!("HalfBallPredictionStruct(num_slices={}, slices=[... {} items])", self.num_slices, self.slices.len())
     }
