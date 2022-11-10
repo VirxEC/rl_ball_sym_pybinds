@@ -39,6 +39,7 @@ jobs:
         with:
           target: x64
           args: --release --out dist
+          rust-toolchain: stable
       - name: Install built wheel
         run: |
           pip install rlbot
