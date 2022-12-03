@@ -1,3 +1,4 @@
 /target
 rl_ball_sym.pyd
 venv/
+.vscode/
