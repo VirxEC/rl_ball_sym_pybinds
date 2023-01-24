@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use rl_ball_sym::{Ball, BallPrediction, Vec3A};
+use rl_ball_sym::{Ball, BallPrediction, Game, Vec3A};
 
 #[derive(FromPyObject, Debug)]
 pub struct GameVec {
@@ -80,22 +80,39 @@ pub struct GamePacket {
     pub game_ball: GameBall,
 }
 
+impl GamePacket {
+    #[inline]
+    pub fn export_to_game(&self, game: &mut Game) {
+        game.gravity.z = self.game_info.world_gravity_z;
+    }
+
+    pub fn export_to_ball(self, ball: &mut Ball) {
+        ball.update(
+            self.game_info.seconds_elapsed,
+            self.game_ball.physics.location.into(),
+            self.game_ball.physics.velocity.into(),
+            self.game_ball.physics.angular_velocity.into(),
+        );
+
+        let radius = self.game_ball.collision_shape.get_radius();
+        if (ball.radius() - radius).abs() > 0.1 {
+            ball.set_radius(radius, radius + 1.9);
+        }
+    }
+}
+
 #[inline]
 const fn vec3a_to_tuple(v: Vec3A) -> (f32, f32, f32) {
     let [x, y, z] = v.to_array();
     (x, y, z)
 }
 
-#[pyclass(frozen)]
+#[pyclass(frozen, get_all)]
 #[derive(Clone, Copy, Debug)]
 pub struct BallSlice {
-    #[pyo3(get)]
     time: f32,
-    #[pyo3(get)]
     location: (f32, f32, f32),
-    #[pyo3(get)]
     velocity: (f32, f32, f32),
-    #[pyo3(get)]
     angular_velocity: (f32, f32, f32),
 }
 
@@ -130,12 +147,10 @@ impl BallSlice {
     }
 }
 
-#[pyclass(frozen)]
+#[pyclass(frozen, get_all)]
 #[derive(Clone, Debug)]
 pub struct BallPredictionStruct {
-    #[pyo3(get)]
     num_slices: usize,
-    #[pyo3(get)]
     slices: Vec<BallSlice>,
 }
 
@@ -162,14 +177,11 @@ impl BallPredictionStruct {
     }
 }
 
-#[pyclass(frozen)]
+#[pyclass(frozen, get_all)]
 #[derive(Clone, Copy, Debug)]
 pub struct HalfBallSlice {
-    #[pyo3(get)]
     time: f32,
-    #[pyo3(get)]
     location: (f32, f32, f32),
-    #[pyo3(get)]
     velocity: (f32, f32, f32),
 }
 
@@ -197,12 +209,10 @@ impl HalfBallSlice {
     }
 }
 
-#[pyclass(frozen)]
+#[pyclass(frozen, get_all)]
 #[derive(Clone, Debug)]
 pub struct HalfBallPredictionStruct {
-    #[pyo3(get)]
     num_slices: usize,
-    #[pyo3(get)]
     slices: Vec<HalfBallSlice>,
 }
 

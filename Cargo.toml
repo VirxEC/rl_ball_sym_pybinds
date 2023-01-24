@@ -1,6 +1,6 @@
 [package]
 name = "rl_ball_sym_pybinds"
-version = "1.1.7"
+version = "1.1.8"
 edition = "2021"
 rust-version = "1.65"
 
@@ -14,7 +14,7 @@ path = "src/lib.rs"
 rl_ball_sym = { version = "2.5.0", default-features = false, features = ["fast-math", "stable-compression"] }
 
 [dependencies.pyo3]
-version = "0.17.1"
+version = "0.18.0"
 features = ["extension-module", "abi3-py37"]
 
 [profile.release]

@@ -85,26 +85,16 @@ fn load_soccar_throwback() {
 
 #[pyfunction]
 fn tick(py: Python, packet: PyObject) -> PyResult<()> {
-    let packet = packet.as_ref(py).extract::<GamePacket>()?;
+    let packet: GamePacket = packet.as_ref(py).extract()?;
 
-    {
-        let mut game_guard = GAME.write().expect("GAME lock was poisoned");
-        let game = game_guard.as_mut().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
-        game.gravity.z = packet.game_info.world_gravity_z;
-    }
-    
-    let mut ball = BALL.write().expect("BALL lock was poisoned");
-    ball.update(
-        packet.game_info.seconds_elapsed,
-        packet.game_ball.physics.location.into(),
-        packet.game_ball.physics.velocity.into(),
-        packet.game_ball.physics.angular_velocity.into(),
+    packet.export_to_game(
+        GAME.write()
+            .expect("GAME lock was poisoned")
+            .as_mut()
+            .ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?,
     );
 
-    let radius = packet.game_ball.collision_shape.get_radius();
-    if (ball.radius() - radius).abs() > 0.1 {
-        ball.set_radius(radius, radius + 1.9);
-    }
+    packet.export_to_ball(&mut BALL.write().expect("BALL lock was poisoned"));
 
     Ok(())
 }
