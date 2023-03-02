@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use rl_ball_sym::{Ball, BallPrediction, Game, Vec3A};
+use rl_ball_sym::{Ball, Game, Predictions, Vec3A};
 
 #[derive(FromPyObject, Debug)]
 pub struct GameVec {
@@ -156,7 +156,7 @@ pub struct BallPredictionStruct {
 
 impl BallPredictionStruct {
     #[inline]
-    pub fn from_rl_ball_sym(raw_struct: BallPrediction) -> Self {
+    pub fn from_rl_ball_sym(raw_struct: Predictions) -> Self {
         Self {
             num_slices: raw_struct.len(),
             slices: raw_struct.into_iter().map(BallSlice::from_rl_ball_sym).collect(),
@@ -218,7 +218,7 @@ pub struct HalfBallPredictionStruct {
 
 impl HalfBallPredictionStruct {
     #[inline]
-    pub fn from_rl_ball_sym(raw_struct: BallPrediction) -> Self {
+    pub fn from_rl_ball_sym(raw_struct: Predictions) -> Self {
         let slices = raw_struct.into_iter().step_by(2).map(HalfBallSlice::from_rl_ball_sym).collect::<Vec<_>>();
 
         Self { num_slices: slices.len(), slices }

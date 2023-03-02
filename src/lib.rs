@@ -29,12 +29,10 @@ pynamedmodule! {
     doc: "rl_ball_sym is a Rust implementation of ball path prediction for Rocket League; Inspired by Samuel (Chip) P. Mish's C++ utils called RLUtilities",
     name: rl_ball_sym_pybinds,
     funcs: [
-        load_soccer,
-        load_soccar,
+        load_standard,
         load_dropshot,
         load_hoops,
-        load_soccar_throwback,
-        load_soccer_throwback,
+        load_standard_throwback,
         tick,
         step_ball,
         get_ball_prediction_struct,
@@ -46,15 +44,10 @@ pynamedmodule! {
 }
 
 #[pyfunction]
-fn load_soccer() {
-    let (game, ball) = rl_ball_sym::compressed::load_soccer();
+fn load_standard() {
+    let (game, ball) = rl_ball_sym::compressed::load_standard();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = ball;
-}
-
-#[pyfunction]
-fn load_soccar() {
-    load_soccer();
 }
 
 #[pyfunction]
@@ -72,15 +65,10 @@ fn load_hoops() {
 }
 
 #[pyfunction]
-fn load_soccer_throwback() {
-    let (game, ball) = rl_ball_sym::compressed::load_soccar_throwback();
+fn load_standard_throwback() {
+    let (game, ball) = rl_ball_sym::compressed::load_standard_throwback();
     *GAME.write().expect("GAME lock was poisoned") = Some(game);
     *BALL.write().expect("BALL lock was poisoned") = ball;
-}
-
-#[pyfunction]
-fn load_soccar_throwback() {
-    load_soccer_throwback();
 }
 
 #[pyfunction]
