@@ -8,10 +8,10 @@ import rl_ball_sym_pybinds as rlbs
 print(rlbs.__doc__)
 
 gamemodes = {
-    "soccer": rlbs.load_standard,
+    "standard": rlbs.load_standard,
     "dropshot": rlbs.load_dropshot,
     "hoops": rlbs.load_hoops,
-    "soccer (throwback)": rlbs.load_standard_throwback,
+    "standard (throwback)": rlbs.load_standard_throwback,
 }
 
 predictions = {
@@ -46,7 +46,7 @@ def set_random_packet(time):
     rlbs.tick(packet)
 
 
-gamemodes["soccer"]()
+gamemodes["standard"]()
 for prediction_name, prediction_func in predictions.items():
     print()
     set_random_packet(0)

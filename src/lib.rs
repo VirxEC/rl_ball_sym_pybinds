@@ -9,7 +9,7 @@ use std::sync::RwLock;
 
 static GAME: RwLock<Option<Game>> = RwLock::new(None);
 type NoGamePyErr = exceptions::PyNameError;
-const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_soccer first.";
+const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_standard first.";
 
 static BALL: RwLock<Ball> = RwLock::new(Ball::const_default());
 
@@ -40,7 +40,7 @@ pynamedmodule! {
         get_ball_prediction_struct_full,
         get_ball_prediction_struct_for_time_full
     ],
-    classes: [BallSlice, BallPredictionStruct]
+    classes: [HalfBallSlice, HalfBallPredictionStruct, BallSlice, BallPredictionStruct]
 }
 
 #[pyfunction]
