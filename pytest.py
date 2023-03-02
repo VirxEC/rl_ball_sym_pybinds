@@ -8,10 +8,10 @@ import rl_ball_sym_pybinds as rlbs
 print(rlbs.__doc__)
 
 gamemodes = {
-    "soccer": rlbs.load_soccer,
+    "soccer": rlbs.load_standard,
     "dropshot": rlbs.load_dropshot,
     "hoops": rlbs.load_hoops,
-    "soccer (throwback)": rlbs.load_soccer_throwback,
+    "soccer (throwback)": rlbs.load_standard_throwback,
 }
 
 predictions = {
