@@ -74,7 +74,7 @@ for gamemode_name, load_func in gamemodes.items():
         time = 0
         times = []
 
-        for _ in range(2000):
+        for _ in range(5000):
             set_random_packet(time)
 
             start = time_ns()

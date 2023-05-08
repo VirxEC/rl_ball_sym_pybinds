@@ -3,8 +3,8 @@
 mod pytypes;
 
 use pyo3::{exceptions, prelude::*, PyErr};
-use pytypes::*;
-use rl_ball_sym::simulation::{ball::Ball, game::Game};
+use pytypes::{BallPredictionStruct, BallSlice, GamePacket, HalfBallPredictionStruct, HalfBallSlice};
+use rl_ball_sym::{Ball, Game};
 use std::sync::RwLock;
 
 static GAME: RwLock<Option<Game>> = RwLock::new(None);
@@ -72,9 +72,7 @@ fn load_standard_throwback() {
 }
 
 #[pyfunction]
-fn tick(py: Python, packet: PyObject) -> PyResult<()> {
-    let packet: GamePacket = packet.as_ref(py).extract()?;
-
+fn tick(packet: GamePacket) -> PyResult<()> {
     packet.export_to_game(
         GAME.write()
             .expect("GAME lock was poisoned")
