@@ -7,20 +7,19 @@ import rl_ball_sym_pybinds as rlbs
 
 print(rlbs.__doc__)
 
-gamemodes = {
+GAME_MODES = {
     "standard": rlbs.load_standard,
     "dropshot": rlbs.load_dropshot,
     "hoops": rlbs.load_hoops,
     "standard (throwback)": rlbs.load_standard_throwback,
 }
 
-predictions = {
+PREDICTIONS = {
     "get_ball_prediction_struct": [rlbs.get_ball_prediction_struct,],
     "get_ball_prediction_struct_full": [rlbs.get_ball_prediction_struct_full,],
     "get_ball_prediction_struct_for_time": [rlbs.get_ball_prediction_struct_for_time, 12],
     "get_ball_prediction_struct_for_time_full": [rlbs.get_ball_prediction_struct_for_time_full, 12],
 }
-
 
 def set_random_packet(time):
     packet = GameTickPacket()
@@ -46,8 +45,8 @@ def set_random_packet(time):
     rlbs.tick(packet)
 
 
-gamemodes["standard"]()
-for prediction_name, prediction_func in predictions.items():
+GAME_MODES["standard"]()
+for prediction_name, prediction_func in PREDICTIONS.items():
     print()
     set_random_packet(0)
 
@@ -64,10 +63,10 @@ for prediction_name, prediction_func in predictions.items():
     print(repr(ball_slice))
 
 
-for gamemode_name, load_func in gamemodes.items():
+for gamemode_name, load_func in GAME_MODES.items():
     load_func()
 
-    for prediction_name, prediction_func in predictions.items():
+    for prediction_name, prediction_func in PREDICTIONS.items():
         print()
         print(f"Testing {prediction_name} in {gamemode_name}")
 
