@@ -13,6 +13,9 @@ const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_standard fir
 
 static BALL: RwLock<Ball> = RwLock::new(Ball::const_default());
 
+const TPS: f32 = 120.;
+const TICK_DT: f32 = 1. / TPS;
+
 macro_rules! pynamedmodule {
     (doc: $doc:literal, name: $name:tt, funcs: [$($func_name:path),*], classes: [$($class_name:ident),*]) => {
         #[doc = $doc]
@@ -91,7 +94,7 @@ fn step_ball() -> PyResult<BallSlice> {
     let game = game_guard.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
     let mut ball = BALL.write().expect("BALL lock was poisoned");
 
-    ball.step(game, 1. / 120.);
+    ball.step(game, TICK_DT);
     Ok(BallSlice::from_rl_ball_sym(*ball))
 }
 
