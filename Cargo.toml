@@ -1,8 +1,9 @@
 [package]
 name = "rl_ball_sym_pybinds"
-version = "2.0.4"
+version = "2.0.5"
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.73"
+license = "MIT"
 publish = false
 exclude = [".github/", "*.bat", "*.sh", ".git*", "*.py", "*.png", "rustfmt.toml", "*.cfg"]
 
@@ -13,12 +14,13 @@ crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 [dependencies.rl_ball_sym]
-version = "3.0.0"
+# version = "4.0.0"
 default-features = false
-features = ["stable-compression", "standard", "hoops", "dropshot", "throwback"]
+features = ["compression", "standard", "hoops", "dropshot", "throwback"]
+path = "../rl_ball_sym"
 
 [dependencies.pyo3]
-version = "0.19.0"
+version = "0.20.0"
 features = ["extension-module", "abi3-py37"]
 
 [profile.release]

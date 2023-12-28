@@ -6,7 +6,7 @@
 
 Pre-built binaries for Python 3.7 and beyond in Windows & Linux can be found [here in the build artifacts for the latest workflow run](https://github.com/VirxEC/rl_ball_sym_pybinds/actions).
 
-## Prerequisites:
+## Prerequisites
 
 + [Rust & Cargo](https://www.rust-lang.org/)
 + [RLBot](https://rlbot.org) - Verify that the file `%localappdata%\RLBotGUIX\Python37\python.exe` exists. If it doesn't, please re-download and re-install from the website to update.
@@ -15,9 +15,9 @@ Pre-built binaries for Python 3.7 and beyond in Windows & Linux can be found [he
 ## Steps to build the Python bindings
 
 1. Download this repository
-3. Run `develop.bat`
-4. The package will be automatically installed into RLBot's Python installation
-5. `import rl_ball_sym_pybinds` in your Python file
+2. Run `develop.bat`
+3. The package will be automatically installed into RLBot's Python installation
+4. `import rl_ball_sym_pybinds` in your Python file
 
 ## Basic usage in an RLBot script to render the path prediction
 
@@ -37,7 +37,7 @@ class rl_ball_sym(BaseScript):
         super().__init__("rl_ball_sym")
 
     def main(self):
-        rlbs.load_soccer()
+        rlbs.load_standard()
 
         while 1:
             try:
@@ -46,7 +46,7 @@ class rl_ball_sym(BaseScript):
                 path_prediction = rlbs.get_ball_prediction_struct()
 
                 self.renderer.begin_rendering()
-                self.renderer.draw_polyline_3d(tuple(path_prediction.slices[i].location for i in range(0, path_prediction.num_slices, 4)), self.renderer.red())
+                self.renderer.draw_polyline_3d(tuple(path_prediction.slices[i].location for i in range(0, path_prediction.num_slices)), self.renderer.red())
                 self.renderer.end_rendering()
             except Exception:
                 print_exc()

@@ -11,7 +11,7 @@ pub struct GameVec {
 impl From<GameVec> for Vec3A {
     #[inline]
     fn from(gv: GameVec) -> Self {
-        Vec3A::new(gv.x, gv.y, gv.z)
+        Self::new(gv.x, gv.y, gv.z)
     }
 }
 
@@ -38,7 +38,7 @@ pub struct GameCollisionShape {
     #[pyo3(attribute("type"))]
     shape_type: usize,
     #[pyo3(attribute("box"))]
-    box_: GameBox,
+    cuboid: GameBox,
     sphere: GameSphere,
     cylinder: GameCylinder,
 }
@@ -47,7 +47,7 @@ impl GameCollisionShape {
     #[inline]
     pub fn get_radius(&self) -> f32 {
         match self.shape_type {
-            0 => (self.box_.length + self.box_.width + self.box_.height) / 6.,
+            0 => (self.cuboid.length + self.cuboid.width + self.cuboid.height) / 6.,
             1 => self.sphere.diameter / 2.,
             2 => self.cylinder.diameter / 2.,
             _ => panic!("Invalid shape type: {}", self.shape_type),
@@ -95,8 +95,8 @@ impl GamePacket {
         );
 
         let radius = self.game_ball.collision_shape.get_radius();
-        if (ball.radius() - radius).abs() > 0.1 {
-            ball.set_radius(radius, radius + 1.9);
+        if (ball.radius() - radius).abs() > f32::EPSILON {
+            ball.set_radius(radius);
         }
     }
 }
@@ -154,9 +154,9 @@ pub struct BallPredictionStruct {
     slices: Vec<BallSlice>,
 }
 
-impl BallPredictionStruct {
+impl From<Predictions> for BallPredictionStruct {
     #[inline]
-    pub fn from_rl_ball_sym(raw_struct: Predictions) -> Self {
+    fn from(raw_struct: Predictions) -> Self {
         Self {
             num_slices: raw_struct.len(),
             slices: raw_struct.into_iter().map(BallSlice::from_rl_ball_sym).collect(),
@@ -216,9 +216,9 @@ pub struct HalfBallPredictionStruct {
     slices: Vec<HalfBallSlice>,
 }
 
-impl HalfBallPredictionStruct {
+impl From<Predictions> for HalfBallPredictionStruct {
     #[inline]
-    pub fn from_rl_ball_sym(raw_struct: Predictions) -> Self {
+    fn from(raw_struct: Predictions) -> Self {
         let slices = raw_struct.into_iter().step_by(2).map(HalfBallSlice::from_rl_ball_sym).collect::<Vec<_>>();
 
         Self { num_slices: slices.len(), slices }

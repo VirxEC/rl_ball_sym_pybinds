@@ -2,3 +2,5 @@
 rl_ball_sym.pyd
 venv/
 .vscode/
+__pycache__/
+collision_meshes/
