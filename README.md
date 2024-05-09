@@ -4,13 +4,13 @@
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-rust.svg)](https://forthebadge.com)
 
-Pre-built binaries for Python 3.7 and beyond in Windows & Linux can be found [here in the build artifacts for the latest workflow run](https://github.com/VirxEC/rl_ball_sym_pybinds/actions).
+Pre-built binaries for Python 3.10 and beyond in Windows & Linux can be found [here in the build artifacts for the latest workflow run](https://github.com/VirxEC/rl_ball_sym_pybinds/actions).
 
 ## Prerequisites
 
 + [Rust & Cargo](https://www.rust-lang.org/)
-+ [RLBot](https://rlbot.org) - Verify that the file `%localappdata%\RLBotGUIX\Python37\python.exe` exists. If it doesn't, please re-download and re-install from the website to update.
-+ Maturin - Downloaded onto your main global Python installion, you can install via `pip install maturin`
++ [RLBot](https://rlbot.org) - Verify that the file `%localappdata%\RLBotGUIX\Python311\python.exe` exists. If it doesn't, please re-download and re-install from the website to update.
++ Maturin - Downloaded onto your main global Python installation, you can install via `pip install maturin`
 
 ## Steps to build the Python bindings
 
