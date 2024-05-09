@@ -43,11 +43,11 @@ jobs:
           rust-toolchain: stable
       - name: Install built wheel
         run: |
-          pip install rlbot
-          pip install rl_ball_sym_pybinds  --no-index --find-links dist --force-reinstall
+          pip install rlbot_flatbuffers
+          pip install rl_ball_sym_pybinds --no-index --find-links dist --force-reinstall
           python pytest.py
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist
@@ -76,7 +76,7 @@ jobs:
         container: quay.io/pypa/manylinux_2_28_x86_64:latest
         args: --release --out dist
     - name: Upload wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wheels
         path: dist
