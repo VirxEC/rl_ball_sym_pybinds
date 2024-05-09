@@ -30,29 +30,30 @@ pub struct GameBox {
 #[derive(FromPyObject, Debug)]
 pub struct GameCylinder {
     pub diameter: f32,
-    pub height: f32,
+    pub _height: f32,
+}
+
+#[derive(FromPyObject, Debug)]
+pub enum GameCollisionShapeUnion {
+    Box(GameBox),
+    Sphere(GameSphere),
+    Cylinder(GameCylinder),
+}
+
+impl GameCollisionShapeUnion {
+    #[inline]
+    pub fn get_radius(&self) -> f32 {
+        match self {
+            Self::Box(cuboid) => (cuboid.length + cuboid.width + cuboid.height) / 6.,
+            Self::Sphere(sphere) => sphere.diameter / 2.,
+            Self::Cylinder(cylinder) => cylinder.diameter / 2.,
+        }
+    }
 }
 
 #[derive(FromPyObject, Debug)]
 pub struct GameCollisionShape {
-    #[pyo3(attribute("type"))]
-    shape_type: usize,
-    #[pyo3(attribute("box"))]
-    cuboid: GameBox,
-    sphere: GameSphere,
-    cylinder: GameCylinder,
-}
-
-impl GameCollisionShape {
-    #[inline]
-    pub fn get_radius(&self) -> f32 {
-        match self.shape_type {
-            0 => (self.cuboid.length + self.cuboid.width + self.cuboid.height) / 6.,
-            1 => self.sphere.diameter / 2.,
-            2 => self.cylinder.diameter / 2.,
-            _ => panic!("Invalid shape type: {}", self.shape_type),
-        }
-    }
+    pub item: GameCollisionShapeUnion,
 }
 
 #[derive(FromPyObject, Debug)]
@@ -65,7 +66,7 @@ pub struct GamePhysics {
 #[derive(FromPyObject, Debug)]
 pub struct GameBall {
     pub physics: GamePhysics,
-    pub collision_shape: GameCollisionShape,
+    pub shape: GameCollisionShape,
 }
 
 #[derive(FromPyObject, Debug)]
@@ -77,7 +78,7 @@ pub struct GameInfo {
 #[derive(FromPyObject, Debug)]
 pub struct GamePacket {
     pub game_info: GameInfo,
-    pub game_ball: GameBall,
+    pub ball: GameBall,
 }
 
 impl GamePacket {
@@ -89,12 +90,12 @@ impl GamePacket {
     pub fn export_to_ball(self, ball: &mut Ball) {
         ball.update(
             self.game_info.seconds_elapsed,
-            self.game_ball.physics.location.into(),
-            self.game_ball.physics.velocity.into(),
-            self.game_ball.physics.angular_velocity.into(),
+            self.ball.physics.location.into(),
+            self.ball.physics.velocity.into(),
+            self.ball.physics.angular_velocity.into(),
         );
 
-        let radius = self.game_ball.collision_shape.get_radius();
+        let radius = self.ball.shape.item.get_radius();
         if (ball.radius() - radius).abs() > f32::EPSILON {
             ball.set_radius(radius);
         }

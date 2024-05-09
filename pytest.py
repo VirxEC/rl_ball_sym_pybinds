@@ -1,7 +1,7 @@
 from random import uniform
 from time import time_ns
 
-from rlbot.utils.structures.game_data_struct import *
+from rlbot_flatbuffers import GameTickPacket, SphereShape
 
 import rl_ball_sym_pybinds as rlbs
 
@@ -25,20 +25,19 @@ def set_random_packet(time):
     packet = GameTickPacket()
 
     # set 6 cars to test the speed of tick()
-    packet.game_ball.physics.location.x = uniform(-4000, 4000)
-    packet.game_ball.physics.location.y = uniform(-5020, 5020)
-    packet.game_ball.physics.location.z = uniform(100, 1944)
+    packet.ball.physics.location.x = uniform(-4000, 4000)
+    packet.ball.physics.location.y = uniform(-5020, 5020)
+    packet.ball.physics.location.z = uniform(100, 1944)
 
-    packet.game_ball.physics.velocity.x = uniform(-2000, 2000)
-    packet.game_ball.physics.velocity.y = uniform(-2000, 2000)
-    packet.game_ball.physics.velocity.z = uniform(-2000, 2000)
+    packet.ball.physics.velocity.x = uniform(-2000, 2000)
+    packet.ball.physics.velocity.y = uniform(-2000, 2000)
+    packet.ball.physics.velocity.z = uniform(-2000, 2000)
 
-    packet.game_ball.physics.angular_velocity.x = uniform(-1, 1)
-    packet.game_ball.physics.angular_velocity.y = uniform(-1, 1)
-    packet.game_ball.physics.angular_velocity.z = uniform(-1, 1)
+    packet.ball.physics.angular_velocity.x = uniform(-1, 1)
+    packet.ball.physics.angular_velocity.y = uniform(-1, 1)
+    packet.ball.physics.angular_velocity.z = uniform(-1, 1)
 
-    packet.game_ball.collision_shape.type = 1
-    packet.game_ball.collision_shape.sphere.diameter = 182.5
+    packet.ball.shape.item = SphereShape(182.5)
     packet.game_info.world_gravity_z = -650.
     packet.game_info.seconds_elapsed = time
 

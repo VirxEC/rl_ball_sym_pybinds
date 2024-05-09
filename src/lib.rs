@@ -9,8 +9,8 @@ use pytypes::{BallPredictionStruct, BallSlice, GamePacket, HalfBallPredictionStr
 use rl_ball_sym::{Ball, Game};
 
 thread_local! {
-    static GAME: RefCell<Option<Game>> = RefCell::new(None);
-    static BALL: RefCell<Ball> = RefCell::new(Ball::const_default());
+    static GAME: RefCell<Option<Game>> = const { RefCell::new(None) };
+    static BALL: RefCell<Ball> = const { RefCell::new(Ball::const_default()) };
 }
 
 type NoGamePyErr = exceptions::PyNameError;
@@ -23,7 +23,7 @@ macro_rules! pynamedmodule {
     (doc: $doc:literal, name: $name:tt, funcs: [$($func_name:path),*], classes: [$($class_name:ident),*]) => {
         #[doc = $doc]
         #[pymodule]
-        fn $name(_py: Python, m: &PyModule) -> PyResult<()> {
+        fn $name(m: &Bound<PyModule>) -> PyResult<()> {
             $(m.add_function(wrap_pyfunction!($func_name, m)?)?);*;
             $(m.add_class::<$class_name>()?);*;
             Ok(())

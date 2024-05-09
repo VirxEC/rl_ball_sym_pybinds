@@ -1,6 +1,6 @@
 [package]
 name = "rl_ball_sym_pybinds"
-version = "2.0.5"
+version = "3.0.0"
 edition = "2021"
 rust-version = "1.73"
 license = "MIT"
@@ -14,14 +14,13 @@ crate-type = ["cdylib"]
 path = "src/lib.rs"
 
 [dependencies.rl_ball_sym]
-# version = "4.0.0"
+version = "4.0.0"
 default-features = false
 features = ["compression", "standard", "hoops", "dropshot", "throwback"]
-path = "../rl_ball_sym"
 
 [dependencies.pyo3]
-version = "0.20.0"
-features = ["extension-module", "abi3-py37"]
+version = "0.21.2"
+features = ["extension-module", "abi3-py310"]
 
 [profile.release]
 codegen-units=1

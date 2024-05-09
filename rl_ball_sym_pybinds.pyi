@@ -25,7 +25,7 @@ def load_standard_throwback() -> None:
 
 
 try:
-    from rlbot.utils.structures.game_data_struct import GameTickPacket
+    from rlbot_flatbuffers import GameTickPacket
 except ImportError:
     pass
 
