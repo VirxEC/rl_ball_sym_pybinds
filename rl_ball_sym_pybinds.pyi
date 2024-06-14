@@ -24,6 +24,12 @@ def load_standard_throwback() -> None:
     """
 
 
+def load_standard_heatseeker() -> None:
+    """
+    Loads the geometry of a standard field for Heatseeker
+    """
+
+
 try:
     from rlbot_flatbuffers import GameTickPacket
 except ImportError:
