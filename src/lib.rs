@@ -3,15 +3,17 @@
 
 mod pytypes;
 
-use core::cell::RefCell;
 use pyo3::{exceptions, prelude::*, PyErr};
 use pytypes::{BallPredictionStruct, BallSlice, GamePacket, HalfBallPredictionStruct, HalfBallSlice};
 use rl_ball_sym::{Ball, Game};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    RwLock,
+};
 
-thread_local! {
-    static GAME: RefCell<Option<Game>> = const { RefCell::new(None) };
-    static BALL: RefCell<Ball> = const { RefCell::new(Ball::const_default()) };
-}
+static GAME: RwLock<Option<Game>> = RwLock::new(None);
+static BALL: RwLock<Ball> = RwLock::new(Ball::const_default());
+static HEATSEEKER: AtomicBool = AtomicBool::new(false);
 
 type NoGamePyErr = exceptions::PyNameError;
 const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_standard first.";
@@ -39,6 +41,7 @@ pynamedmodule! {
         load_dropshot,
         load_hoops,
         load_standard_throwback,
+        load_standard_heatseeker,
         tick,
         step_ball,
         get_ball_prediction_struct,
@@ -52,108 +55,146 @@ pynamedmodule! {
 #[pyfunction]
 fn load_standard() {
     let (game, ball) = rl_ball_sym::load_standard();
-    GAME.set(Some(game));
-    BALL.set(ball);
+
+    *GAME.write().unwrap() = Some(game);
+    *BALL.write().unwrap() = ball;
+    HEATSEEKER.store(false, Ordering::Relaxed);
+}
+
+#[pyfunction]
+fn load_standard_heatseeker() {
+    let (game, ball) = rl_ball_sym::load_standard_heatseeker();
+
+    *GAME.write().unwrap() = Some(game);
+    *BALL.write().unwrap() = ball;
+    HEATSEEKER.store(true, Ordering::Relaxed);
 }
 
 #[pyfunction]
 fn load_dropshot() {
     let (game, ball) = rl_ball_sym::load_dropshot();
-    GAME.set(Some(game));
-    BALL.set(ball);
+
+    *GAME.write().unwrap() = Some(game);
+    *BALL.write().unwrap() = ball;
+    HEATSEEKER.store(false, Ordering::Relaxed);
 }
 
 #[pyfunction]
 fn load_hoops() {
     let (game, ball) = rl_ball_sym::load_hoops();
-    GAME.set(Some(game));
-    BALL.set(ball);
+
+    *GAME.write().unwrap() = Some(game);
+    *BALL.write().unwrap() = ball;
+    HEATSEEKER.store(false, Ordering::Relaxed);
 }
 
 #[pyfunction]
 fn load_standard_throwback() {
     let (game, ball) = rl_ball_sym::load_standard_throwback();
-    GAME.set(Some(game));
-    BALL.set(ball);
+
+    *GAME.write().unwrap() = Some(game);
+    *BALL.write().unwrap() = ball;
+    HEATSEEKER.store(false, Ordering::Relaxed);
 }
 
 #[pyfunction]
 fn tick(packet: GamePacket) -> PyResult<()> {
-    GAME.with_borrow_mut(|game| {
-        let Some(game) = game.as_mut() else {
-            return Err(PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR));
-        };
-
+    {
+        let mut game_lock = GAME.write().unwrap();
+        let game = game_lock.as_mut().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
         packet.export_to_game(game);
+    }
 
-        Ok(())
-    })?;
-
-    BALL.with_borrow_mut(|ball| {
-        packet.export_to_ball(ball);
-    });
+    {
+        let mut ball_lock = BALL.write().unwrap();
+        packet.export_to_ball(&mut ball_lock);
+    }
 
     Ok(())
 }
 
 #[pyfunction]
 fn step_ball() -> PyResult<BallSlice> {
-    GAME.with_borrow(|game| {
-        let Some(game) = game.as_ref() else {
-            return Err(PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR));
-        };
+    let game_lock = GAME.read().unwrap();
+    let game = game_lock.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-        BALL.with_borrow_mut(|ball| {
-            ball.step(game, TICK_DT);
-            Ok(BallSlice::from_rl_ball_sym(*ball))
-        })
-    })
+    let mut ball = BALL.write().unwrap();
+
+    if HEATSEEKER.load(Ordering::Relaxed) {
+        let target = ball.velocity.y.signum() > 0.;
+        ball.set_heatseeker_target(target);
+        ball.step_heatseeker(game, TICK_DT);
+    } else {
+        ball.step(game, TICK_DT);
+    }
+
+    Ok(BallSlice::from_rl_ball_sym(*ball))
 }
 
 #[pyfunction]
 fn get_ball_prediction_struct() -> PyResult<HalfBallPredictionStruct> {
-    GAME.with_borrow(|game| {
-        let Some(game) = game.as_ref() else {
-            return Err(PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR));
-        };
-        let ball = BALL.with_borrow(|ball| *ball);
+    let game_lock = GAME.read().unwrap();
+    let game = game_lock.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-        Ok(ball.get_ball_prediction_struct(game).into())
-    })
+    let ball = BALL.read().unwrap();
+    let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
+        let mut target_ball = *ball;
+        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
+        target_ball.get_heatseeker_prediction_struct(game)
+    } else {
+        ball.get_ball_prediction_struct(game)
+    };
+
+    Ok(prediction.into())
 }
 
 #[pyfunction]
 fn get_ball_prediction_struct_full() -> PyResult<BallPredictionStruct> {
-    GAME.with_borrow(|game| {
-        let Some(game) = game.as_ref() else {
-            return Err(PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR));
-        };
-        let ball = BALL.with_borrow(|ball| *ball);
+    let game_lock = GAME.read().unwrap();
+    let game = game_lock.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-        Ok(ball.get_ball_prediction_struct(game).into())
-    })
+    let ball = BALL.read().unwrap();
+    let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
+        let mut target_ball = *ball;
+        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
+        target_ball.get_heatseeker_prediction_struct(game)
+    } else {
+        ball.get_ball_prediction_struct(game)
+    };
+
+    Ok(prediction.into())
 }
 
 #[pyfunction]
 fn get_ball_prediction_struct_for_time(time: f32) -> PyResult<HalfBallPredictionStruct> {
-    GAME.with_borrow(|game| {
-        let Some(game) = game.as_ref() else {
-            return Err(PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR));
-        };
-        let ball = BALL.with_borrow(|ball| *ball);
+    let game_lock = GAME.read().unwrap();
+    let game = game_lock.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-        Ok(ball.get_ball_prediction_struct_for_time(game, time).into())
-    })
+    let ball = BALL.read().unwrap();
+    let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
+        let mut target_ball = *ball;
+        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
+        target_ball.get_heatseeker_prediction_struct_for_time(game, time)
+    } else {
+        ball.get_ball_prediction_struct_for_time(game, time)
+    };
+
+    Ok(prediction.into())
 }
 
 #[pyfunction]
 fn get_ball_prediction_struct_for_time_full(time: f32) -> PyResult<BallPredictionStruct> {
-    GAME.with_borrow(|game| {
-        let Some(game) = game.as_ref() else {
-            return Err(PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR));
-        };
-        let ball = BALL.with_borrow(|ball| *ball);
+    let game_lock = GAME.read().unwrap();
+    let game = game_lock.as_ref().ok_or_else(|| PyErr::new::<NoGamePyErr, _>(NO_GAME_ERR))?;
 
-        Ok(ball.get_ball_prediction_struct_for_time(game, time).into())
-    })
+    let ball = BALL.read().unwrap();
+    let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
+        let mut target_ball = *ball;
+        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
+        target_ball.get_heatseeker_prediction_struct_for_time(game, time)
+    } else {
+        ball.get_ball_prediction_struct_for_time(game, time)
+    };
+
+    Ok(prediction.into())
 }
