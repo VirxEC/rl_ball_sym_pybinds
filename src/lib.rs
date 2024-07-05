@@ -1,5 +1,4 @@
 #![warn(clippy::pedantic, clippy::all)]
-#![forbid(unsafe_code)]
 
 mod pytypes;
 
@@ -13,7 +12,7 @@ use std::sync::{
 
 static GAME: RwLock<Option<Game>> = RwLock::new(None);
 static BALL: RwLock<Ball> = RwLock::new(Ball::const_default());
-static HEATSEEKER: AtomicBool = AtomicBool::new(false);
+pub static HEATSEEKER: AtomicBool = AtomicBool::new(false);
 
 type NoGamePyErr = exceptions::PyNameError;
 const NO_GAME_ERR: &str = "GAME is unset. Call a function like load_standard first.";
@@ -121,8 +120,6 @@ fn step_ball() -> PyResult<BallSlice> {
     let mut ball = BALL.write().unwrap();
 
     if HEATSEEKER.load(Ordering::Relaxed) {
-        let target = ball.velocity.y.signum() > 0.;
-        ball.set_heatseeker_target(target);
         ball.step_heatseeker(game, TICK_DT);
     } else {
         ball.step(game, TICK_DT);
@@ -138,9 +135,7 @@ fn get_ball_prediction_struct() -> PyResult<HalfBallPredictionStruct> {
 
     let ball = BALL.read().unwrap();
     let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
-        let mut target_ball = *ball;
-        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
-        target_ball.get_heatseeker_prediction_struct(game)
+        ball.get_heatseeker_prediction_struct(game)
     } else {
         ball.get_ball_prediction_struct(game)
     };
@@ -155,9 +150,7 @@ fn get_ball_prediction_struct_full() -> PyResult<BallPredictionStruct> {
 
     let ball = BALL.read().unwrap();
     let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
-        let mut target_ball = *ball;
-        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
-        target_ball.get_heatseeker_prediction_struct(game)
+        ball.get_heatseeker_prediction_struct(game)
     } else {
         ball.get_ball_prediction_struct(game)
     };
@@ -172,9 +165,7 @@ fn get_ball_prediction_struct_for_time(time: f32) -> PyResult<HalfBallPrediction
 
     let ball = BALL.read().unwrap();
     let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
-        let mut target_ball = *ball;
-        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
-        target_ball.get_heatseeker_prediction_struct_for_time(game, time)
+        ball.get_heatseeker_prediction_struct_for_time(game, time)
     } else {
         ball.get_ball_prediction_struct_for_time(game, time)
     };
@@ -189,9 +180,7 @@ fn get_ball_prediction_struct_for_time_full(time: f32) -> PyResult<BallPredictio
 
     let ball = BALL.read().unwrap();
     let prediction = if HEATSEEKER.load(Ordering::Relaxed) {
-        let mut target_ball = *ball;
-        target_ball.set_heatseeker_target(ball.velocity.y.signum() > 0.);
-        target_ball.get_heatseeker_prediction_struct_for_time(game, time)
+        ball.get_heatseeker_prediction_struct_for_time(game, time)
     } else {
         ball.get_ball_prediction_struct_for_time(game, time)
     };

@@ -1,7 +1,11 @@
+use std::sync::atomic::Ordering;
+
 use pyo3::prelude::*;
 use rl_ball_sym::{Ball, Game, Predictions, Vec3A};
 
-#[derive(FromPyObject, Debug)]
+use crate::HEATSEEKER;
+
+#[derive(FromPyObject, Debug, Clone, Copy)]
 pub struct GameVec {
     pub x: f32,
     pub y: f32,
@@ -64,8 +68,15 @@ pub struct GamePhysics {
 }
 
 #[derive(FromPyObject, Debug)]
+pub struct BallTouch {
+    pub game_seconds: f32,
+    pub team: u8,
+}
+
+#[derive(FromPyObject, Debug)]
 pub struct GameBall {
     pub physics: GamePhysics,
+    pub latest_touch: BallTouch,
     pub shape: GameCollisionShape,
 }
 
@@ -78,7 +89,7 @@ pub struct GameInfo {
 #[derive(FromPyObject, Debug)]
 pub struct GamePacket {
     pub game_info: GameInfo,
-    pub ball: GameBall,
+    pub balls: Vec<GameBall>,
 }
 
 impl GamePacket {
@@ -90,14 +101,26 @@ impl GamePacket {
     pub fn export_to_ball(self, ball: &mut Ball) {
         ball.update(
             self.game_info.seconds_elapsed,
-            self.ball.physics.location.into(),
-            self.ball.physics.velocity.into(),
-            self.ball.physics.angular_velocity.into(),
+            self.balls[0].physics.location.into(),
+            self.balls[0].physics.velocity.into(),
+            self.balls[0].physics.angular_velocity.into(),
         );
 
-        let radius = self.ball.shape.item.get_radius();
+        let radius = self.balls[0].shape.item.get_radius();
         if (ball.radius() - radius).abs() > f32::EPSILON {
             ball.set_radius(radius);
+        }
+
+        if !HEATSEEKER.load(Ordering::Relaxed) {
+            return;
+        }
+
+        if self.balls[0].latest_touch.game_seconds < f32::EPSILON {
+            ball.reset_heatseeker_target();
+        } else if self.game_info.seconds_elapsed - self.balls[0].latest_touch.game_seconds < 0.1 {
+            ball.set_heatseeker_target(self.balls[0].latest_touch.team == 1);
+        } else if ball.get_heatseeker_target().y == 0. || ball.location.y.abs() >= 4820. {
+            ball.set_heatseeker_target((self.balls[0].physics.velocity.y.signum() + 1.).abs() < f32::EPSILON);
         }
     }
 }
